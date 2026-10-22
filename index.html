@@ -871,7 +871,17 @@ document.addEventListener('click', async e => {
 });
 
 /* Instalação como app (funciona quando publicado no GitHub Pages) */
-try { if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {}) } catch (e) {}
+try {
+  if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude/.test(location.hostname)) {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+      reg.update();
+      document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reg.update() });
+    }).catch(() => {});
+    // Quando uma versão nova assume, recarrega uma vez para mostrá-la
+    let recarregou = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!recarregou && navigator.serviceWorker.controller) { recarregou = true; location.reload() } });
+  }
+} catch (e) {}
 
 if (S.token) ir('inicio'); else render();
 </script>
