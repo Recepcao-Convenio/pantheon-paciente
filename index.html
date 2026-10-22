@@ -5,172 +5,175 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pantheon Paciente</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#0B0812">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F4F3F8">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pantheon">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: app escuro de coluna única (máx. 560px), cabeçalho e barra inferior em vidro fosco,
-   cartões com borda luminosa, números em fonte mono. Identidade: ônix arroxeado + ouro Pantheon + lavanda. */
+/* Layout: coluna única (máx. 560px), cabeçalho e barra inferior em vidro claro; cartões brancos com borda fina
+   e sombra em camadas; o cartão do próximo atendimento em tinta escura como peça de destaque.
+   Identidade: porcelana fria + violeta Pantheon + ouro; números em fonte mono. Visual claro único, escolhido de propósito. */
 :root {
-  --fundo: #0B0812;
-  --fundo-2: #120D1C;
-  --superficie: rgba(255,255,255,.035);
-  --superficie-forte: #181224;
-  --vidro: rgba(16,11,26,.72);
-  --linha: rgba(255,255,255,.08);
-  --linha-forte: rgba(255,255,255,.16);
-  --texto: #F3EEF9;
-  --texto-2: #A69CB6;
-  --texto-3: #6F6580;
-  --ouro: #D6B26E;
-  --ouro-2: #F1D9A4;
-  --acento: #A98BF2;
-  --acento-suave: rgba(169,139,242,.12);
-  --brilho: rgba(169,139,242,.35);
-  --ok: #6FE0A6; --ok-suave: rgba(111,224,166,.12);
-  --alerta: #F2C46B; --alerta-suave: rgba(242,196,107,.12);
-  --erro: #FF8A8A; --erro-suave: rgba(255,138,138,.12);
-  --neutro-suave: rgba(255,255,255,.06);
+  --fundo: #F4F3F8;
+  --superficie: #FFFFFF;
+  --superficie-2: #FAF9FD;
+  --vidro: rgba(255,255,255,.78);
+  --linha: #E5E2EE;
+  --linha-forte: #D5D0E2;
+  --texto: #14101C;
+  --texto-2: #5D5570;
+  --texto-3: #958DA6;
+  --tinta: #17112A;
+  --acento: #5A3ED0;
+  --acento-2: #8A6CF2;
+  --acento-suave: #EFEBFD;
+  --ouro: #A6803A;
+  --ouro-claro: #E9D6AB;
+  --ok: #17845A; --ok-suave: #E3F5EC;
+  --alerta: #9A6B0E; --alerta-suave: #FBF1DC;
+  --erro: #C0392F; --erro-suave: #FCE9E7;
+  --neutro-suave: #EFEDF4;
+  --sombra: 0 1px 2px rgba(23,17,42,.04), 0 4px 14px rgba(23,17,42,.05);
+  --sombra-alta: 0 2px 4px rgba(23,17,42,.04), 0 18px 40px -12px rgba(48,30,110,.22);
   --f-display: "Sora", "Segoe UI", system-ui, sans-serif;
   --f-corpo: "Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --raio: 18px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box }
 html, body { height: 100% }
 body {
-  background: var(--fundo); color: var(--texto); font-family: var(--f-corpo); font-size: 15px; line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+  background: var(--fundo); color: var(--texto); font-family: var(--f-corpo); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased;
   background-image:
-    radial-gradient(900px 520px at 85% -10%, rgba(169,139,242,.16), transparent 60%),
-    radial-gradient(700px 480px at -10% 30%, rgba(214,178,110,.08), transparent 60%);
+    radial-gradient(800px 420px at 100% -8%, rgba(138,108,242,.13), transparent 62%),
+    radial-gradient(640px 380px at -12% 22%, rgba(214,178,110,.12), transparent 60%);
   background-attachment: fixed;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--fundo) }
 button, input, textarea, select { font: inherit; color: inherit }
 button { cursor: pointer; -webkit-tap-highlight-color: transparent }
+a { -webkit-tap-highlight-color: transparent }
 :focus-visible { outline: 2px solid var(--acento); outline-offset: 2px }
-h1, h2, h3 { font-family: var(--f-display); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -.02em }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -.025em }
 p { margin: 0 }
 .miudo { font-size: 13px; color: var(--texto-2) }
-.rotulo { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ouro); font-weight: 500 }
+.rotulo { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ouro); font-weight: 600 }
 
 /* Capa / login */
 .capa { min-height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 48px 32px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 52px 32px;
   background:
-    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 32px 32px,
-    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px) 0 0 / 32px 32px,
-    radial-gradient(600px 400px at 50% 0%, rgba(169,139,242,.28), transparent 70%),
+    radial-gradient(520px 360px at 15% 0%, rgba(138,108,242,.22), transparent 70%),
+    radial-gradient(480px 340px at 95% 18%, rgba(214,178,110,.22), transparent 70%),
     var(--fundo); }
-.capa::after { content: ""; position: absolute; inset: auto 0 0; height: 40%; background: linear-gradient(transparent, var(--fundo)); pointer-events: none }
-.capa > * { position: relative; z-index: 1 }
-.capa-topo { max-width: 440px; width: 100%; margin: 0 auto; display: grid; gap: 14px; justify-items: center; text-align: center; padding-block: 8px 30px }
-.capa-topo h1 { font-size: 32px; background: linear-gradient(180deg, #fff, #CFC3E6); -webkit-background-clip: text; background-clip: text; color: transparent }
+.capa-topo { max-width: 440px; width: 100%; margin: 0 auto; display: grid; gap: 14px; justify-items: center; text-align: center; padding-block: 6px 30px }
+.capa-topo h1 { font-size: 32px; color: var(--tinta) }
 .capa-topo p { color: var(--texto-2); max-width: 30ch }
-.marca { width: 56px; height: 56px; color: var(--ouro); filter: drop-shadow(0 0 14px rgba(214,178,110,.45)) }
-.cartao-login { max-width: 440px; width: 100%; margin: 0 auto; background: var(--vidro); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--linha-forte); border-radius: 24px; padding: 22px 20px 24px; display: grid; gap: 16px;
-  box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06) }
-.segmento { display: grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,.04); border: 1px solid var(--linha); border-radius: 14px; padding: 4px; gap: 4px }
+.marca { width: 56px; height: 56px; color: var(--ouro) }
+.capa-topo .marca { width: 68px; height: 68px; padding: 14px; border-radius: 20px; color: var(--ouro-claro);
+  background: linear-gradient(150deg, #2B2048, #120C22); box-shadow: 0 14px 30px -10px rgba(48,30,110,.55), inset 0 1px 0 rgba(255,255,255,.12) }
+.cartao-login { max-width: 440px; width: 100%; margin: 0 auto; background: var(--vidro); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.9); border-radius: 24px; padding: 22px 20px 24px; display: grid; gap: 16px; box-shadow: var(--sombra-alta) }
+.segmento { display: grid; grid-template-columns: 1fr 1fr; background: var(--neutro-suave); border-radius: 14px; padding: 4px; gap: 4px }
 .segmento button { border: 0; background: transparent; padding: 9px 8px; border-radius: 10px; font-weight: 600; color: var(--texto-2) }
-.segmento button[aria-pressed="true"] { background: rgba(169,139,242,.18); color: var(--texto); box-shadow: inset 0 0 0 1px rgba(169,139,242,.45) }
+.segmento button[aria-pressed="true"] { background: var(--superficie); color: var(--texto); box-shadow: 0 1px 3px rgba(23,17,42,.12) }
 .capa-rodape { text-align: center; color: var(--texto-3); font-size: 12.5px; margin-top: 22px }
 
 /* Formulários */
 form { display: grid; gap: 14px }
 .campo { display: grid; gap: 6px }
 .campo label { font-weight: 600; font-size: 13px; color: var(--texto-2) }
-.campo input, .campo textarea { width: 100%; border: 1px solid var(--linha-forte); background: rgba(255,255,255,.04); border-radius: 12px; padding: 13px 14px; font-size: 16px; transition: border-color .15s, box-shadow .15s }
+.campo input, .campo textarea { width: 100%; border: 1px solid var(--linha-forte); background: var(--superficie); border-radius: 12px; padding: 13px 14px; font-size: 16px; transition: border-color .15s, box-shadow .15s }
 .campo input::placeholder, .campo textarea::placeholder { color: var(--texto-3) }
-.campo input:focus, .campo textarea:focus { border-color: var(--acento); outline: none; box-shadow: 0 0 0 4px rgba(169,139,242,.15) }
+.campo input:focus, .campo textarea:focus { border-color: var(--acento); outline: none; box-shadow: 0 0 0 4px rgba(90,62,208,.12) }
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--texto-2) }
 .check input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--acento); flex: none }
-.erro-msg { background: var(--erro-suave); color: var(--erro); border: 1px solid rgba(255,138,138,.25); border-radius: 12px; padding: 10px 12px; font-size: 14px }
-.info-msg { background: var(--acento-suave); color: var(--texto); border: 1px solid rgba(169,139,242,.25); border-radius: 12px; padding: 10px 12px; font-size: 14px }
+.erro-msg { background: var(--erro-suave); color: var(--erro); border: 1px solid rgba(192,57,47,.18); border-radius: 12px; padding: 10px 12px; font-size: 14px }
+.info-msg { background: var(--acento-suave); color: var(--tinta); border: 1px solid rgba(90,62,208,.16); border-radius: 12px; padding: 10px 12px; font-size: 14px }
 
 .btn { border: 0; border-radius: 14px; padding: 14px 18px; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: transform .12s, filter .15s, box-shadow .15s }
 .btn:active { transform: scale(.98) }
-.btn-primario { background: linear-gradient(135deg, #B79CF7 0%, #8C6BE6 55%, #7553D6 100%); color: #120A20; box-shadow: 0 10px 30px -8px var(--brilho), inset 0 1px 0 rgba(255,255,255,.35) }
-.btn-primario:hover { filter: brightness(1.07) }
-.btn-secundario { background: var(--acento-suave); color: var(--acento); box-shadow: inset 0 0 0 1px rgba(169,139,242,.3) }
-.btn-linha { background: rgba(255,255,255,.03); border: 1px solid var(--linha-forte); color: var(--texto) }
-.btn-perigo { background: linear-gradient(135deg, #FF9A9A, #E06464); color: #2A0A0A }
+.btn-primario { background: linear-gradient(135deg, #2C2050 0%, #4A33B0 60%, #6A4EE0 100%); color: #fff; box-shadow: 0 12px 26px -10px rgba(74,51,176,.6), inset 0 1px 0 rgba(255,255,255,.18) }
+.btn-primario:hover { filter: brightness(1.08) }
+.btn-secundario { background: var(--acento-suave); color: var(--acento) }
+.btn-linha { background: var(--superficie); border: 1px solid var(--linha-forte); color: var(--texto) }
+.btn-perigo { background: var(--erro); color: #fff }
 .btn-texto { background: none; border: 0; color: var(--acento); font-weight: 600; padding: 6px 0; display: inline-flex; align-items: center; gap: 4px }
 .btn[disabled] { opacity: .5; cursor: default; box-shadow: none }
 .btn-bloco { width: 100% }
 
 /* App */
-.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--vidro); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4);
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--vidro); backdrop-filter: blur(16px) saturate(1.6); -webkit-backdrop-filter: blur(16px) saturate(1.6);
   border-bottom: 1px solid var(--linha);
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px }
 .topo-in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 10px }
-.topo-in .marca { width: 26px; height: 26px }
-.topo-in strong { font-family: var(--f-display); font-weight: 600; font-size: 17px; letter-spacing: .12em; text-transform: uppercase; flex: 1 }
-.topo-in button { background: rgba(255,255,255,.05); border: 1px solid var(--linha); color: var(--texto-2); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600 }
+.topo-in .marca { width: 30px; height: 30px; padding: 6px; border-radius: 9px; color: var(--ouro-claro); background: linear-gradient(150deg, #2B2048, #120C22) }
+.topo-in strong { font-family: var(--f-display); font-weight: 600; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; flex: 1; color: var(--tinta) }
+.topo-in button { background: var(--superficie); border: 1px solid var(--linha); color: var(--texto-2); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600 }
 .demo-faixa { background: var(--alerta-suave); color: var(--alerta); font-size: 12px; text-align: center; padding: 6px 16px; font-weight: 600; font-family: var(--f-mono); letter-spacing: .04em }
-main { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px calc(104px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 18px }
+main { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px calc(108px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 18px }
 .saudacao { display: grid; gap: 4px }
-.saudacao h1 { font-size: 28px }
-.cartao { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 16px; display: grid; gap: 12px; min-width: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.04) }
-.destaque { position: relative; overflow: hidden; border: 1px solid transparent;
-  background:
-    radial-gradient(420px 220px at 100% 0%, rgba(169,139,242,.32), transparent 70%),
-    linear-gradient(160deg, #1E1530, #120C1D) padding-box,
-    linear-gradient(135deg, rgba(214,178,110,.7), rgba(169,139,242,.5) 50%, rgba(255,255,255,.06)) border-box;
-  box-shadow: 0 24px 60px -20px rgba(120,80,220,.45) }
-.destaque h2 { font-size: 22px }
-.destaque .btn-linha { background: rgba(255,255,255,.06) }
+.saudacao h1 { font-size: 28px; color: var(--tinta) }
+.cartao { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 16px; display: grid; gap: 12px; min-width: 0; box-shadow: var(--sombra) }
+.destaque { position: relative; overflow: hidden; color: #F4F0FB; border: 0;
+  background: radial-gradient(380px 220px at 105% -10%, rgba(138,108,242,.55), transparent 70%), radial-gradient(260px 200px at -10% 120%, rgba(214,178,110,.28), transparent 70%), linear-gradient(155deg, #251B42, #120C22);
+  box-shadow: 0 22px 44px -18px rgba(40,24,100,.6) }
+.destaque .rotulo { color: var(--ouro-claro) }
+.destaque .miudo { color: #BDB3D3 }
+.destaque h2 { font-size: 22px; color: #fff }
+.destaque .btn-linha { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); color: #fff }
 .data-grande { display: flex; gap: 14px; align-items: center }
-.data-bloco { flex: none; width: 62px; border-radius: 14px; background: rgba(0,0,0,.25); text-align: center; padding: 8px 0 7px; border: 1px solid rgba(214,178,110,.45); box-shadow: 0 0 20px -6px rgba(214,178,110,.5) }
-.data-bloco b { display: block; font-family: var(--f-mono); font-weight: 600; font-size: 24px; line-height: 1.1; color: var(--ouro-2) }
-.data-bloco span { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2) }
+.data-bloco { flex: none; width: 62px; border-radius: 14px; background: rgba(255,255,255,.07); text-align: center; padding: 8px 0 7px; border: 1px solid rgba(233,214,171,.45) }
+.data-bloco b { display: block; font-family: var(--f-mono); font-weight: 600; font-size: 24px; line-height: 1.1; color: var(--ouro-claro) }
+.data-bloco span { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: #BDB3D3 }
 .acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
-.acao { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 15px; text-align: left; display: grid; gap: 10px; align-content: start; color: var(--texto); text-decoration: none; min-height: 112px; transition: border-color .15s, background .15s, transform .12s }
-.acao svg { width: 34px; height: 34px; padding: 7px; border-radius: 10px; color: var(--acento); background: var(--acento-suave); box-shadow: inset 0 0 0 1px rgba(169,139,242,.25) }
+.acao { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 15px; text-align: left; display: grid; gap: 10px; align-content: start; color: var(--texto); text-decoration: none; min-height: 112px; box-shadow: var(--sombra); transition: border-color .15s, transform .12s, box-shadow .15s }
+.acao svg { width: 36px; height: 36px; padding: 8px; border-radius: 11px; color: var(--acento); background: var(--acento-suave) }
 .acao b { font-size: 14.5px; font-family: var(--f-display); font-weight: 600; letter-spacing: -.01em }
 .acao span { font-size: 12.5px; color: var(--texto-2) }
-.acao:hover { border-color: rgba(169,139,242,.45); background: rgba(169,139,242,.06) }
+.acao:hover { border-color: rgba(90,62,208,.35); box-shadow: var(--sombra-alta) }
 .acao:active { transform: scale(.985) }
 .linha-botoes { display: flex; gap: 8px; flex-wrap: wrap }
 .linha-botoes .btn { flex: 1 1 130px }
 
 /* Etapas de agendamento */
 .etapas { display: flex; gap: 6px }
-.etapas i { flex: 1; height: 3px; border-radius: 3px; background: var(--linha-forte) }
-.etapas i.feita { background: linear-gradient(90deg, var(--ouro), var(--acento)); box-shadow: 0 0 10px rgba(169,139,242,.5) }
+.etapas i { flex: 1; height: 3px; border-radius: 3px; background: var(--linha) }
+.etapas i.feita { background: linear-gradient(90deg, var(--ouro), var(--acento)) }
 .cab-etapa { display: grid; gap: 6px }
-.cab-etapa h2 { font-size: 24px }
+.cab-etapa h2 { font-size: 24px; color: var(--tinta) }
 .lista-op { display: grid; gap: 8px }
-.op { width: 100%; text-align: left; background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; padding: 13px 14px; display: flex; gap: 12px; align-items: center; transition: border-color .15s, background .15s }
-.op:hover { border-color: rgba(169,139,242,.45) }
-.op[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); box-shadow: 0 0 0 3px rgba(169,139,242,.12) }
+.op { width: 100%; text-align: left; background: var(--superficie); border: 1px solid var(--linha); border-radius: 14px; padding: 13px 14px; display: flex; gap: 12px; align-items: center; color: var(--texto); text-decoration: none; box-shadow: var(--sombra); transition: border-color .15s, box-shadow .15s }
+.op:hover { border-color: rgba(90,62,208,.35) }
+.op[aria-pressed="true"] { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(90,62,208,.12) }
 .op .txt { flex: 1; min-width: 0; display: grid; gap: 1px }
 .op .txt b { font-weight: 600 }
 .op .txt span { font-size: 13px; color: var(--texto-2) }
-.op .seta { color: var(--texto-3) }
-.avatar { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-weight: 700; font-size: 13.5px; font-family: var(--f-mono);
-  color: var(--ouro-2); background: linear-gradient(145deg, rgba(214,178,110,.18), rgba(169,139,242,.14)); box-shadow: inset 0 0 0 1px rgba(214,178,110,.3) }
-.dias { overflow-x: auto; display: flex; gap: 8px; padding: 2px 2px 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none }
+.op .seta { color: var(--texto-3); display: grid }
+.op-whats { background: var(--superficie-2); border-style: dashed }
+.op-whats .txt span { color: var(--ok) }
+.op-whats .seta { color: var(--ok) }
+.avatar { flex: none; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-weight: 600; font-size: 13px; font-family: var(--f-mono); color: var(--ouro-claro); background: linear-gradient(150deg, #2B2048, #120C22) }
+.dias { overflow-x: auto; display: flex; gap: 8px; padding: 2px 2px 10px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none }
 .dias::-webkit-scrollbar { display: none }
-.dia { flex: none; width: 64px; border: 1px solid var(--linha); background: var(--superficie); border-radius: 14px; padding: 9px 0; display: grid; justify-items: center; gap: 2px; scroll-snap-align: start; transition: border-color .15s }
+.dia { flex: none; width: 64px; border: 1px solid var(--linha); background: var(--superficie); border-radius: 14px; padding: 9px 0; display: grid; justify-items: center; gap: 2px; scroll-snap-align: start; box-shadow: var(--sombra) }
 .dia span { font-family: var(--f-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--texto-2) }
-.dia b { font-size: 21px; font-family: var(--f-mono); font-weight: 600 }
-.dia:hover { border-color: rgba(169,139,242,.45) }
-.dia[aria-pressed="true"] { background: linear-gradient(160deg, #B79CF7, #7553D6); border-color: transparent; color: #120A20; box-shadow: 0 10px 24px -8px var(--brilho) }
-.dia[aria-pressed="true"] span { color: rgba(18,10,32,.75) }
+.dia b { font-size: 21px; font-family: var(--f-mono); font-weight: 600; color: var(--tinta) }
+.dia:hover { border-color: rgba(90,62,208,.35) }
+.dia[aria-pressed="true"] { background: linear-gradient(155deg, #2C2050, #5A3ED0); border-color: transparent; box-shadow: 0 10px 22px -8px rgba(74,51,176,.6) }
+.dia[aria-pressed="true"] span { color: rgba(255,255,255,.72) }
+.dia[aria-pressed="true"] b { color: #fff }
 .horarios { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px }
-.hora { border: 1px solid var(--linha); background: var(--superficie); border-radius: 12px; padding: 11px 0; font-weight: 600; font-family: var(--f-mono); font-variant-numeric: tabular-nums; transition: border-color .15s, background .15s }
-.hora:hover { border-color: var(--acento); background: var(--acento-suave) }
-.hora[aria-pressed="true"] { background: linear-gradient(160deg, #B79CF7, #7553D6); color: #120A20; border-color: transparent }
+.hora { border: 1px solid var(--linha); background: var(--superficie); border-radius: 12px; padding: 11px 0; font-weight: 600; font-family: var(--f-mono); font-variant-numeric: tabular-nums; color: var(--tinta); box-shadow: var(--sombra) }
+.hora:hover { border-color: var(--acento); color: var(--acento) }
+.hora[aria-pressed="true"] { background: linear-gradient(155deg, #2C2050, #5A3ED0); color: #fff; border-color: transparent }
 .resumo { display: grid; gap: 10px; margin: 0 }
 .resumo div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--linha-forte); padding-bottom: 10px }
 .resumo div:last-child { border-bottom: 0; padding-bottom: 0 }
@@ -178,58 +181,57 @@ main { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-i
 .resumo dd { margin: 0; font-weight: 600; text-align: right }
 
 /* Agendamentos */
-.abas { display: grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,.04); border: 1px solid var(--linha); border-radius: 14px; padding: 4px; gap: 4px }
+.abas { display: grid; grid-template-columns: 1fr 1fr; background: var(--neutro-suave); border-radius: 14px; padding: 4px; gap: 4px }
 .abas button { background: none; border: 0; padding: 9px; border-radius: 10px; font-weight: 600; color: var(--texto-2) }
-.abas button[aria-pressed="true"] { color: var(--texto); background: rgba(169,139,242,.18); box-shadow: inset 0 0 0 1px rgba(169,139,242,.45) }
+.abas button[aria-pressed="true"] { color: var(--texto); background: var(--superficie); box-shadow: 0 1px 3px rgba(23,17,42,.12) }
 .ag { display: grid; gap: 10px }
 .ag-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px }
 .ag-cab h3 { font-family: var(--f-display); font-weight: 600; font-size: 15.5px; letter-spacing: -.01em }
-.ag-quando { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--ouro-2) }
+.ag-quando { font-family: var(--f-mono); font-size: 13.5px; font-variant-numeric: tabular-nums; color: var(--acento) }
 .pilula { flex: none; font-family: var(--f-mono); font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; letter-spacing: .06em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 6px }
-.pilula::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor }
+.pilula::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor }
 .st-agendado { background: var(--acento-suave); color: var(--acento) }
 .st-confirmado { background: var(--ok-suave); color: var(--ok) }
 .st-realizado { background: var(--neutro-suave); color: var(--texto-2) }
 .st-cancelado { background: var(--erro-suave); color: var(--erro) }
 .st-faltou { background: var(--alerta-suave); color: var(--alerta) }
-.confirmar-caixa { background: var(--erro-suave); border: 1px solid rgba(255,138,138,.25); border-radius: 14px; padding: 12px; display: grid; gap: 10px }
+.confirmar-caixa { background: var(--erro-suave); border: 1px solid rgba(192,57,47,.18); border-radius: 14px; padding: 12px; display: grid; gap: 10px }
 .vazio { text-align: center; padding: 30px 16px; display: grid; gap: 12px; justify-items: center; color: var(--texto-2) }
-.vazio svg { width: 44px; height: 44px; color: var(--ouro); filter: drop-shadow(0 0 12px rgba(214,178,110,.35)) }
+.vazio svg { width: 44px; height: 44px; color: var(--ouro) }
 
 /* Preparo */
-details.prep { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 0 16px }
-details.prep[open] { border-color: rgba(169,139,242,.35) }
+details.prep { background: var(--superficie); border: 1px solid var(--linha); border-radius: var(--raio); padding: 0 16px; box-shadow: var(--sombra) }
+details.prep[open] { border-color: rgba(90,62,208,.3) }
 details.prep summary { list-style: none; cursor: pointer; padding: 15px 0; display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-family: var(--f-display) }
 details.prep summary::-webkit-details-marker { display: none }
 details.prep summary::after { content: "+"; color: var(--acento); font-family: var(--f-mono); font-size: 18px; line-height: 1 }
 details.prep[open] summary::after { content: "–" }
-details.prep ul { margin: 0 0 16px; padding-left: 20px; display: grid; gap: 7px; color: var(--texto) }
+details.prep ul { margin: 0 0 16px; padding-left: 20px; display: grid; gap: 7px }
 details.prep li::marker { color: var(--ouro) }
 details.prep p { margin-bottom: 12px; color: var(--texto-2); font-size: 13.5px }
 
 /* NPS */
 .escala { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px }
 .escala button { border: 1px solid var(--linha); background: var(--superficie); border-radius: 10px; padding: 10px 0; font-weight: 600; font-size: 14px; font-family: var(--f-mono); font-variant-numeric: tabular-nums }
-.escala button[aria-pressed="true"] { background: linear-gradient(160deg, #B79CF7, #7553D6); color: #120A20; border-color: transparent; box-shadow: 0 8px 20px -6px var(--brilho) }
+.escala button[aria-pressed="true"] { background: linear-gradient(155deg, #2C2050, #5A3ED0); color: #fff; border-color: transparent }
 .escala-leg { display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-2) }
 @media (max-width: 380px) { .escala { grid-template-columns: repeat(6, minmax(0, 1fr)) } }
 
 /* Navegação inferior */
 .nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
-  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding-top: 8px;
-  background: linear-gradient(transparent, rgba(11,8,18,.9) 40%) }
+  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding-top: 10px;
+  background: linear-gradient(rgba(244,243,248,0), rgba(244,243,248,.92) 45%) }
 .nav-in { max-width: 520px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px; gap: 4px;
-  background: var(--vidro); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border: 1px solid var(--linha-forte); border-radius: 22px; box-shadow: 0 16px 40px rgba(0,0,0,.5) }
-.nav button { background: none; border: 0; padding: 8px 2px; border-radius: 16px; display: grid; justify-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--texto-3); transition: color .15s, background .15s }
+  background: var(--vidro); backdrop-filter: blur(16px) saturate(1.6); -webkit-backdrop-filter: blur(16px) saturate(1.6); border: 1px solid rgba(255,255,255,.95); border-radius: 22px; box-shadow: var(--sombra-alta) }
+.nav button { background: none; border: 0; padding: 8px 2px; border-radius: 16px; display: grid; justify-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: var(--texto-3) }
 .nav svg { width: 22px; height: 22px }
-.nav button[aria-current="page"] { color: var(--texto); background: rgba(169,139,242,.16) }
-.nav button[aria-current="page"] svg { color: var(--acento); filter: drop-shadow(0 0 6px rgba(169,139,242,.7)) }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(100px + env(safe-area-inset-bottom, 0px)); z-index: 8; background: rgba(28,20,42,.95); color: var(--texto); border: 1px solid rgba(169,139,242,.4); padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 14px; max-width: calc(100% - 32px); box-shadow: 0 12px 36px rgba(0,0,0,.5), 0 0 24px -6px var(--brilho) }
+.nav button[aria-current="page"] { color: #fff; background: linear-gradient(155deg, #2C2050, #5A3ED0); box-shadow: 0 8px 18px -8px rgba(74,51,176,.7) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(104px + env(safe-area-inset-bottom, 0px)); z-index: 8; background: var(--tinta); color: #fff; padding: 12px 16px; border-radius: 14px; font-weight: 600; font-size: 14px; max-width: calc(100% - 32px); box-shadow: 0 14px 34px rgba(23,17,42,.3) }
 .carregando { display: grid; place-items: center; padding: 32px; color: var(--texto-2); font-family: var(--f-mono); font-size: 13px; gap: 12px }
-.carregando::before { content: ""; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--linha-forte); border-top-color: var(--acento); animation: gira .8s linear infinite }
+.carregando::before { content: ""; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--linha); border-top-color: var(--acento); animation: gira .8s linear infinite }
 @keyframes gira { to { transform: rotate(360deg) } }
 .whats { display: grid; gap: 6px }
-.whats .num { font-family: var(--f-mono); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; user-select: all; color: var(--ouro-2) }
+.whats .num { font-family: var(--f-mono); font-weight: 600; font-size: 18px; font-variant-numeric: tabular-nums; user-select: all; color: var(--tinta) }
 @media (prefers-reduced-motion: no-preference) { .tela { animation: entra .28s cubic-bezier(.2,.8,.2,1) } @keyframes entra { from { opacity: .3; transform: translateY(8px) } } }
 @media (prefers-reduced-motion: reduce) { .carregando::before { animation: none } }
 </style>
@@ -390,7 +392,7 @@ async function api(metodo, caminho, corpo) {
 
 /* Simulação: mesmas respostas do servidor real, com dados fictícios. */
 const Simulacao = (() => {
-  const convs = [{ id: '142', nome: 'AFFEGO' }, { id: '100', nome: 'Saúde Caixa' }, { id: '109', nome: 'PF Saúde (Polícia Federal)' }];
+  const convs = [{ id: '142', nome: 'AFFEGO' }, { id: 'w:BRB', nome: 'BRB (Saúde BRB)', whatsapp: true }, { id: '109', nome: 'PF Saúde (Polícia Federal)' }, { id: '100', nome: 'Saúde Caixa' }, { id: 'w:SERPRO', nome: 'SERPRO', whatsapp: true }];
   const prof = (id, nome, esp, valor, comConv = true, extra = {}) => ({ id, nome, especialidade: esp, disponivel: true, aviso: '',
     modalidades: [{ id: 'presencial', nome: '', convenios: [{ id: '88', nome: 'Particular', valor }, ...(comConv ? convs : [])] }], ...extra });
   const servicos = [
@@ -646,7 +648,9 @@ function telaAgendar() {
       return `<button class="op" data-a="agMod" data-v="${esc(mm.id)}" aria-pressed="${g.modalidade === mm.id}"><span class="txt"><b>${esc(mm.nome || 'Presencial')}</b><span>${v != null ? moeda(v) : ''}</span></span><span class="seta">${I.seta}</span></button>` }).join('')}</div>`;
   } else if (g.etapa === 'convenio') {
     corpo = `<div class="cab-etapa">${rot}<h2>Particular ou convênio?</h2><p class="miudo">${resumo}</p></div>
-    <div class="lista-op">${m.convenios.map(c => `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Leve a carteirinha e um documento com foto'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
+    <div class="lista-op">${m.convenios.map(c => c.whatsapp
+      ? `<a class="op op-whats" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent(`Olá! Quero agendar ${sv.nome} com ${p.nome} pelo convênio ${c.nome}.`)}" target="_blank" rel="noopener"><span class="txt"><b>${esc(c.nome)}</b><span>Agendamento pela recepção · WhatsApp</span></span><span class="seta">${I.whats.replace('<svg', '<svg width="20" height="20"')}</span></a>`
+      : `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Agendamento online · leve a carteirinha'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
     <p class="miudo">Não encontrou seu convênio? Fale com a recepção pelo WhatsApp: <b>${esc(CONFIG.WHATSAPP_EXIBIR)}</b>.</p>`;
   } else if (g.etapa === 'hora') {
     const porDia = {};
@@ -803,7 +807,7 @@ document.addEventListener('click', async e => {
         if (pp.modalidades.length > 1) { g.modalidade = null; irPara('modalidade'); break }
         const cs = modAtual(g).convenios;
         if (cs.length === 1) { g.convenio = cs[0].id; irPara('hora') }
-        else { if (!cs.some(c => c.id === g.convenio)) g.convenio = cs.some(c => c.id === guardar.get('pp_convenio')) ? guardar.get('pp_convenio') : null; irPara('convenio') }
+        else { if (!cs.some(c => c.id === g.convenio && !c.whatsapp)) g.convenio = cs.some(c => c.id === guardar.get('pp_convenio')) ? guardar.get('pp_convenio') : null; irPara('convenio') }
         break;
       }
       case 'agMod': {
