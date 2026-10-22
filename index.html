@@ -356,49 +356,44 @@ async function api(metodo, caminho, corpo) {
 
 /* Simulação: mesmas respostas do servidor real, com dados fictícios. */
 const Simulacao = (() => {
-  const profs = {
-    p1: { id: 'p1', nome: 'Dra. Helena Duarte', especialidade: 'Endocrinologia' },
-    p2: { id: 'p2', nome: 'Dr. Rafael Moura', especialidade: 'Medicina esportiva' },
-    p3: { id: 'p3', nome: 'Dra. Lívia Campos', especialidade: 'Nutrologia' },
-    p4: { id: 'p4', nome: 'Dr. André Lins', especialidade: 'Radiologia' },
-    p5: { id: 'p5', nome: 'Equipe de coleta', especialidade: 'Laboratório' }
-  };
+  const convs = [{ id: '142', nome: 'AFFEGO' }, { id: '100', nome: 'Saúde Caixa' }, { id: '109', nome: 'PF Saúde (Polícia Federal)' }];
+  const prof = (id, nome, esp, valor, comConv = true, extra = {}) => ({ id, nome, especialidade: esp, disponivel: true, aviso: '',
+    modalidades: [{ id: 'presencial', nome: '', convenios: [{ id: '88', nome: 'Particular', valor }, ...(comConv ? convs : [])] }], ...extra });
   const servicos = [
-    { id: 's1', nome: 'Consulta – Emagrecimento', categoria: 'consulta', duracao: 30, prof: ['p1', 'p3'] },
-    { id: 's2', nome: 'Consulta – Hipertrofia', categoria: 'consulta', duracao: 30, prof: ['p2'] },
-    { id: 's3', nome: 'Consulta – Longevidade', categoria: 'consulta', duracao: 40, prof: ['p1', 'p3'] },
-    { id: 's4', nome: 'Bioimpedância', categoria: 'bioimpedancia', duracao: 20, prof: ['p3'] },
-    { id: 's5', nome: 'Ultrassonografia', categoria: 'ultrassom', duracao: 30, prof: ['p4'] },
-    { id: 's6', nome: 'Coleta de exames de sangue', categoria: 'laboratorio', duracao: 15, prof: ['p5'] }
+    { id: 's1', nome: 'Consulta – Nutrologia', categoria: 'consulta', profissionais: [prof('p1', 'Helena Duarte', 'Nutrologia', 450), prof('p2', 'Rafael Moura', 'Nutrologia', 550)] },
+    { id: 's2', nome: 'Consulta – Endocrinologia', categoria: 'consulta', profissionais: [prof('p3', 'Lívia Campos', 'Endocrinologia', 700, false), prof('p4', 'André Lins', 'Endocrinologia', 450, true, { disponivel: false, aviso: 'Atende a partir de 16 anos' })] },
+    { id: 's3', nome: 'Consulta – Psicologia', categoria: 'consulta', profissionais: [{ id: 'p5', nome: 'Clara Nunes', especialidade: 'Psicologia', disponivel: true, aviso: '',
+      modalidades: [{ id: 'presencial', nome: 'Presencial', convenios: [{ id: '88', nome: 'Particular', valor: 150 }] }, { id: 'telemedicina', nome: 'Telemedicina', convenios: [{ id: '88', nome: 'Particular', valor: 100 }] }] }] }
   ];
   const contas = { '52998224725': { senha: 'pantheon123', nascimento: '1990-05-12', nome: 'Mariana Souza' } };
   const dia = n => diaSP(new Date(Date.now() + n * 864e5));
   const sv = id => servicos.find(s => s.id === id);
-  const pub = s => ({ id: s.id, nome: s.nome, categoria: s.categoria, duracao: s.duracao, profissionais: s.prof.map(p => profs[p]) });
+  const pf = id => { for (const s of servicos) for (const p of s.profissionais) if (p.id === id) return p };
   let seq = 4;
   const ags = [
     { id: 'a1', inicio: dia(3) + 'T09:30:00-03:00', servico: 's1', prof: 'p1', status: 'confirmado' },
-    { id: 'a2', inicio: dia(3) + 'T10:10:00-03:00', servico: 's4', prof: 'p3', status: 'agendado' },
-    { id: 'a3', inicio: dia(-12) + 'T14:00:00-03:00', servico: 's3', prof: 'p3', status: 'realizado', avaliado: false },
-    { id: 'a4', inicio: dia(-40) + 'T08:30:00-03:00', servico: 's6', prof: 'p5', status: 'cancelado' }
+    { id: 'a2', inicio: dia(4) + 'T10:00:00-03:00', servico: 's2', prof: 'p3', status: 'agendado' },
+    { id: 'a3', inicio: dia(-12) + 'T14:00:00-03:00', servico: 's1', prof: 'p2', status: 'realizado', avaliado: false },
+    { id: 'a4', inicio: dia(-40) + 'T08:30:00-03:00', servico: 's2', prof: 'p3', status: 'cancelado' }
   ];
-  const pubAg = a => ({ id: a.id, inicio: a.inicio, status: a.status, avaliado: !!a.avaliado, servico: { id: a.servico, nome: sv(a.servico).nome, categoria: sv(a.servico).categoria }, profissional: { id: a.prof, nome: profs[a.prof].nome } });
-  function livres(servicoId, profId, data) {
-    const s = sv(servicoId); if (!s) return [];
-    const dow = new Date(data + 'T12:00:00-03:00').getUTCDay();
-    if (dow === 0) return [];
-    const fim = dow === 6 ? 12 : 18, out = [];
-    const ps = profId && profId !== 'qualquer' ? [profId] : s.prof;
-    for (let h = 8; h < fim; h++) for (const m of [0, 30]) for (const p of ps) {
-      const hh = String(h).padStart(2, '0') + ':' + (m ? '30' : '00');
-      const inicio = `${data}T${hh}:00-03:00`;
-      const semente = (data + hh + p).split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-      if (semente % 3 === 0) continue;
-      if (new Date(inicio) < Date.now() + 2 * 36e5) continue;
-      if (ags.some(a => a.inicio === inicio && a.prof === p && a.status !== 'cancelado')) continue;
-      if (!out.some(o => o.inicio === inicio)) out.push({ inicio, profissional: { id: p, nome: profs[p].nome } });
+  const pubAg = a => ({ id: a.id, inicio: a.inicio, status: a.status, avaliado: !!a.avaliado, servico: { id: a.servico, nome: sv(a.servico).nome, categoria: sv(a.servico).categoria }, profissional: { id: a.prof, nome: pf(a.prof).nome } });
+  // Cada profissional atende em alguns dias da semana
+  const diasDoProf = { p1: [1, 3, 5], p2: [2, 4], p3: [2], p4: [1, 4], p5: [1, 2, 3, 4, 5] };
+  function livres(profId, de, ate) {
+    const out = [];
+    for (let t = new Date(de + 'T12:00:00-03:00').getTime(); diaSP(new Date(t)) <= ate; t += 864e5) {
+      const data = diaSP(new Date(t)), dow = new Date(data + 'T12:00:00-03:00').getUTCDay();
+      if (!(diasDoProf[profId] || []).includes(dow)) continue;
+      for (let h = 8; h < 18; h++) for (const m of [0, 30]) {
+        const hh = String(h).padStart(2, '0') + ':' + (m ? '30' : '00');
+        const inicio = `${data}T${hh}:00-03:00`;
+        const semente = (data + hh + profId).split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+        if (semente % 3 === 0 || new Date(inicio) < Date.now() + 2 * 36e5) continue;
+        if (ags.some(a => a.inicio === inicio && a.prof === profId && a.status !== 'cancelado')) continue;
+        out.push({ inicio, profissional: { id: profId, nome: pf(profId).nome } });
+      }
     }
-    return out.sort((a, b) => a.inicio.localeCompare(b.inicio));
+    return out;
   }
   const erro = m => { throw new Error(m) };
   async function tratar(metodo, caminho, corpo = {}, token) {
@@ -419,26 +414,24 @@ const Simulacao = (() => {
       return { token: 'demo', paciente: { nome: c.nome } };
     }
     if (!token) erro('Entre novamente.');
-    if (rota === '/servicos') return { servicos: servicos.map(pub), convenios: [{ id: '4', nome: 'Particular' }, { id: '10', nome: 'AMHP' }, { id: '12', nome: 'Bradesco Saúde' }] };
-    if (rota === '/horarios') return { horarios: livres(q.servico, q.profissional, q.data) };
+    if (rota === '/servicos') return { servicos };
+    if (rota === '/horarios') return { horarios: livres(q.profissional, q.de || q.data, q.ate || q.data) };
     if (rota === '/agendamentos' && metodo === 'GET') return { agendamentos: ags.map(pubAg) };
-    if (rota === '/agendamentos' && metodo === 'POST') {
-      const l = livres(corpo.servico, corpo.profissional, corpo.inicio.slice(0, 10)).find(h => h.inicio === corpo.inicio);
+    const reservar = (servico) => {
+      const l = livres(corpo.profissional, corpo.inicio.slice(0, 10), corpo.inicio.slice(0, 10)).find(h => h.inicio === corpo.inicio);
       if (!l) erro('Esse horário acabou de ser ocupado. Escolha outro.');
-      const a = { id: 'a' + (++seq), inicio: corpo.inicio, servico: corpo.servico, prof: l.profissional.id, status: 'agendado' };
-      ags.push(a); return { agendamento: pubAg(a) };
-    }
+      const n = { id: 'a' + (++seq), inicio: corpo.inicio, servico, prof: corpo.profissional, status: 'agendado' };
+      ags.push(n); return n;
+    };
+    if (rota === '/agendamentos' && metodo === 'POST') return { agendamento: pubAg(reservar(corpo.servico)) };
     let m = rota.match(/^\/agendamentos\/([^/]+)\/(cancelar|remarcar|confirmar)$/);
     if (m) {
       const a = ags.find(x => x.id === m[1]); if (!a) erro('Agendamento não encontrado.');
       if (m[2] === 'confirmar') { a.status = 'confirmado'; return { ok: true } }
       if (horasAte(a.inicio) < CONFIG.ANTECEDENCIA_HORAS) erro(`Alterações só até ${CONFIG.ANTECEDENCIA_HORAS}h antes. Fale com a recepção pelo WhatsApp.`);
       if (m[2] === 'cancelar') { a.status = 'cancelado'; return { ok: true } }
-      const l = livres(a.servico, corpo.profissional, corpo.inicio.slice(0, 10)).find(h => h.inicio === corpo.inicio);
-      if (!l) erro('Esse horário acabou de ser ocupado. Escolha outro.');
-      a.status = 'cancelado';
-      const n = { id: 'a' + (++seq), inicio: corpo.inicio, servico: a.servico, prof: l.profissional.id, status: 'agendado' };
-      ags.push(n); return { agendamento: pubAg(n) };
+      const n = reservar(corpo.servico || a.servico); a.status = 'cancelado';
+      return { agendamento: pubAg(n) };
     }
     if (rota === '/nps') { const a = ags.find(x => x.id === corpo.agendamentoId); if (a) a.avaliado = true; return { ok: true } }
     erro('Rota desconhecida.');
@@ -474,7 +467,7 @@ async function carregarAgendamentos(forcar) {
 async function carregarServicos() {
   if (S.servicos) return;
   const r = await api('GET', '/servicos');
-  S.servicos = r.servicos || []; S.convenios = r.convenios || [];
+  S.servicos = r.servicos || [];
 }
 
 function proximos() {
@@ -559,70 +552,95 @@ function telaInicio() {
 }
 
 /* ---------- Agendar (também usado para remarcar) ---------- */
-function conveniosDo(sv) {
-  const todos = S.convenios || [];
-  return sv && sv.convenios ? todos.filter(c => sv.convenios.map(String).includes(String(c.id))) : todos;
-}
-// Etapas do fluxo; a de convênio só aparece quando há mais de uma opção
+const DIAS_BUSCA = 28;
+const moeda = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+const svAtual = g => S.servicos && S.servicos.find(s => s.id === g.servico);
+const profAtual = g => { const sv = svAtual(g); return sv && sv.profissionais.find(p => p.id === g.profissional) };
+const modAtual = g => { const p = profAtual(g); return p && (p.modalidades.find(m => m.id === g.modalidade) || p.modalidades[0]) };
+const convAtual = g => { const m = modAtual(g); return m && m.convenios.find(c => c.id === g.convenio) };
+// Etapas do fluxo; modalidade e convênio só aparecem quando há mais de uma opção
 function passos(g) {
-  const sv = S.servicos && S.servicos.find(s => s.id === g.servico);
-  const comConv = !sv || conveniosDo(sv).length > 1;
-  return ['servico', ...(comConv ? ['convenio'] : []), 'prof', 'hora', 'conf'];
+  const p = profAtual(g), m = modAtual(g);
+  return ['servico', 'prof', ...(p && p.modalidades.length > 1 ? ['modalidade'] : []), ...(!m || m.convenios.length > 1 ? ['convenio'] : []), 'hora', 'conf'];
 }
-function irPara(etapa) { S.ag.etapa = etapa; S.erro = ''; render(); window.scrollTo(0, 0) }
-function depoisDoServico() {
-  const g = S.ag, sv = S.servicos.find(s => s.id === g.servico), cs = conveniosDo(sv);
-  if (cs.length <= 1) { g.convenio = cs[0] ? String(cs[0].id) : ''; return 'prof' }
-  if (!g.convenio || !cs.some(c => String(c.id) === g.convenio)) g.convenio = guardar.get('pp_convenio') || null;
-  return 'convenio';
+function irPara(etapa) {
+  S.ag.etapa = etapa; S.erro = ''; render(); window.scrollTo(0, 0);
+  if (etapa === 'hora' && !S.ag.livres) buscarDias();
+}
+function limparAgenda(g) { g.livres = null; g.ate = null; g.data = null; g.horario = null }
+async function buscarDias(mais) {
+  const g = S.ag;
+  const de = mais && g.ate ? diaSP(new Date(new Date(g.ate + 'T12:00:00-03:00').getTime() + 864e5)) : diaSP();
+  const ate = diaSP(new Date(new Date(de + 'T12:00:00-03:00').getTime() + (DIAS_BUSCA - 1) * 864e5));
+  g.buscando = true; render();
+  try {
+    const r = await api('GET', `/horarios?servico=${encodeURIComponent(g.servico)}&profissional=${encodeURIComponent(g.profissional)}&modalidade=${encodeURIComponent(g.modalidade || '')}&convenio=${encodeURIComponent(g.convenio || '')}&de=${de}&ate=${ate}`);
+    if (S.ag !== g) return;
+    g.livres = (mais && g.livres ? g.livres : []).concat(r.horarios || []);
+    g.ate = ate;
+    if (!g.data) { const d = g.livres[0]; g.data = d ? d.inicio.slice(0, 10) : null }
+  } catch (e) { S.erro = e.message; if (!g.livres) g.livres = [] }
+  g.buscando = false; render();
 }
 function novoFluxo(remarcar) {
-  S.ag = { etapa: 'servico', servico: null, convenio: null, profissional: null, data: null, horario: null, horarios: null, remarcar: remarcar || null };
-  if (remarcar) { S.ag.servico = remarcar.servico.id; S.ag.etapa = depoisDoServico() }
+  S.ag = { etapa: 'servico', servico: null, profissional: null, modalidade: null, convenio: null, livres: null, ate: null, data: null, horario: null, remarcar: remarcar || null };
+  if (remarcar) { S.ag.servico = remarcar.servico.id; S.ag.etapa = 'prof' }
 }
 function telaAgendar() {
   if (!S.servicos) return carregando();
-  const g = S.ag, sv = S.servicos.find(s => s.id === g.servico);
-  const ps = passos(g), idx = ps.indexOf(g.etapa), total = ps.length;
+  const g = S.ag, sv = svAtual(g), p = profAtual(g), m = modAtual(g), conv = convAtual(g);
+  const ps = passos(g), idx = Math.max(0, ps.indexOf(g.etapa)), total = ps.length;
   const inicioFluxo = g.remarcar ? 1 : 0;
   const barra = `<div class="etapas" aria-hidden="true">${ps.map((_, i) => `<i class="${i <= idx ? 'feita' : ''}"></i>`).join('')}</div>`;
   const voltar = idx > inicioFluxo ? `<button class="btn-texto" data-a="agVoltar">${I.voltar} Voltar</button>` : (g.remarcar ? `<button class="btn-texto" data-a="ir" data-v="agenda">${I.voltar} Cancelar remarcação</button>` : '');
   const rot = `<p class="rotulo">${g.remarcar ? 'Remarcar' : 'Agendar'} · etapa ${idx + 1} de ${total}</p>`;
-  const conv = (S.convenios || []).find(c => String(c.id) === String(g.convenio));
+  const resumo = [sv && sv.nome, p && p.nome, m && m.nome, conv && conv.nome].filter(Boolean).map(esc).join(' · ');
   let corpo = '';
   if (g.etapa === 'servico') {
-    corpo = `<div class="cab-etapa">${rot}<h2>O que você quer agendar?</h2></div>
-    <div class="lista-op">${S.servicos.map(s => `<button class="op" data-a="agServico" data-v="${esc(s.id)}"><span class="txt"><b>${esc(s.nome)}</b><span>${s.duracao ? s.duracao + ' min' : ''}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>`;
-  } else if (g.etapa === 'convenio') {
-    corpo = `<div class="cab-etapa">${rot}<h2>Como vai ser o atendimento?</h2><p class="miudo">${esc(sv ? sv.nome : '')}</p></div>
-    <div class="lista-op">${conveniosDo(sv).map(c => `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${String(g.convenio) === String(c.id)}"><span class="txt"><b>${esc(c.nome)}</b><span>${/particular/i.test(c.nome) ? 'Pagamento na clínica' : 'Leve a carteirinha'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>`;
+    corpo = `<div class="cab-etapa">${rot}<h2>Qual consulta você quer agendar?</h2></div>
+    <div class="lista-op">${S.servicos.map(s => `<button class="op" data-a="agServico" data-v="${esc(s.id)}"><span class="txt"><b>${esc(s.nome)}</b><span>${s.profissionais.length} profissiona${s.profissionais.length > 1 ? 'is' : 'l'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>`;
   } else if (g.etapa === 'prof') {
-    const pr = sv ? sv.profissionais : [];
-    corpo = `<div class="cab-etapa">${rot}<h2>Com quem?</h2><p class="miudo">${esc(sv ? sv.nome : '')}${conv ? ' · ' + esc(conv.nome) : ''}</p></div>
-    <div class="lista-op">
-      ${pr.length > 1 ? `<button class="op" data-a="agProf" data-v="qualquer"><span class="avatar">★</span><span class="txt"><b>Primeiro horário disponível</b><span>Qualquer profissional</span></span><span class="seta">${I.seta}</span></button>` : ''}
-      ${pr.map(p => `<button class="op" data-a="agProf" data-v="${esc(p.id)}"><span class="avatar">${esc(iniciais(p.nome))}</span><span class="txt"><b>${esc(p.nome)}</b><span>${esc(p.especialidade || '')}</span></span><span class="seta">${I.seta}</span></button>`).join('')}
-    </div>`;
+    corpo = `<div class="cab-etapa">${rot}<h2>Com quem?</h2><p class="miudo">${esc(sv ? sv.nome : '')}</p></div>
+    <div class="lista-op">${(sv ? sv.profissionais : []).map(pp => {
+      const part = pp.modalidades.map(mm => (mm.convenios.find(c => c.valor != null) || {}).valor).filter(v => v != null);
+      const sub = pp.disponivel === false ? esc(pp.aviso) : [esc(pp.especialidade), part.length ? 'Particular a partir de ' + moeda(Math.min(...part)) : ''].filter(Boolean).join(' · ');
+      return `<button class="op" data-a="agProf" data-v="${esc(pp.id)}" ${pp.disponivel === false ? 'disabled aria-disabled="true" style="opacity:.55;cursor:default"' : ''}><span class="avatar">${esc(iniciais(pp.nome))}</span><span class="txt"><b>${esc(pp.nome)}</b><span>${sub}</span></span><span class="seta">${pp.disponivel === false ? '' : I.seta}</span></button>`;
+    }).join('')}</div>`;
+  } else if (g.etapa === 'modalidade') {
+    corpo = `<div class="cab-etapa">${rot}<h2>Como prefere ser atendido?</h2><p class="miudo">${resumo}</p></div>
+    <div class="lista-op">${p.modalidades.map(mm => { const v = (mm.convenios.find(c => c.valor != null) || {}).valor;
+      return `<button class="op" data-a="agMod" data-v="${esc(mm.id)}" aria-pressed="${g.modalidade === mm.id}"><span class="txt"><b>${esc(mm.nome || 'Presencial')}</b><span>${v != null ? moeda(v) : ''}</span></span><span class="seta">${I.seta}</span></button>` }).join('')}</div>`;
+  } else if (g.etapa === 'convenio') {
+    corpo = `<div class="cab-etapa">${rot}<h2>Particular ou convênio?</h2><p class="miudo">${resumo}</p></div>
+    <div class="lista-op">${m.convenios.map(c => `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Leve a carteirinha e um documento com foto'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
+    <p class="miudo">Não encontrou seu convênio? Fale com a recepção pelo WhatsApp: <b>${esc(CONFIG.WHATSAPP_EXIBIR)}</b>.</p>`;
   } else if (g.etapa === 'hora') {
-    const dias = proximosDias(21);
-    corpo = `<div class="cab-etapa">${rot}<h2>Escolha dia e horário</h2><p class="miudo">${esc(sv ? sv.nome : '')}</p></div>
-    <div class="dias" role="group" aria-label="Dias">${dias.map(d => `<button class="dia" data-a="agData" data-v="${d}" aria-pressed="${g.data === d}"><span>${fmt(d + 'T12:00:00-03:00', { weekday: 'short' }).replace('.', '')}</span><b>${d.slice(8)}</b><span>${fmt(d + 'T12:00:00-03:00', { month: 'short' }).replace('.', '')}</span></button>`).join('')}</div>
-    ${!g.data ? '<p class="miudo">Toque em um dia para ver os horários livres.</p>'
-      : !g.horarios ? carregando('Buscando horários…')
-      : !g.horarios.length ? `<div class="cartao vazio"><p>Sem horários livres neste dia. Tente outra data.</p></div>`
-      : `<div class="horarios" role="group" aria-label="Horários">${g.horarios.map((h, i) => `<button class="hora" data-a="agHora" data-v="${i}" aria-pressed="${g.horario && g.horario.inicio === h.inicio}">${fmtHora(h.inicio)}</button>`).join('')}</div>`}`;
+    const porDia = {};
+    for (const h of (g.livres || [])) (porDia[h.inicio.slice(0, 10)] ||= []).push(h);
+    const dias = Object.keys(porDia).sort();
+    const horas = g.data ? porDia[g.data] || [] : [];
+    corpo = `<div class="cab-etapa">${rot}<h2>Escolha dia e horário</h2><p class="miudo">${resumo}</p></div>
+    ${!g.livres ? carregando('Buscando os dias com horário livre…')
+      : !dias.length ? `<div class="cartao vazio"><p>${esc(p.nome)} não tem horários livres até ${esc(fmt(g.ate + 'T12:00:00-03:00', { day: 'numeric', month: 'long' }))}.</p>
+          <button class="btn btn-secundario" data-a="agMais" ${g.buscando ? 'disabled' : ''}>${g.buscando ? 'Buscando…' : 'Ver datas seguintes'}</button>
+          <p class="miudo">Ou fale com a recepção: ${esc(CONFIG.WHATSAPP_EXIBIR)}</p></div>`
+      : `<div class="dias" role="group" aria-label="Dias com horário livre">${dias.map(d => `<button class="dia" data-a="agData" data-v="${d}" aria-pressed="${g.data === d}"><span>${fmt(d + 'T12:00:00-03:00', { weekday: 'short' }).replace('.', '')}</span><b>${d.slice(8)}</b><span>${fmt(d + 'T12:00:00-03:00', { month: 'short' }).replace('.', '')}</span></button>`).join('')}
+          <button class="dia" data-a="agMais" ${g.buscando ? 'disabled' : ''} title="Ver datas seguintes"><span>mais</span><b>${g.buscando ? '…' : '+'}</b><span>datas</span></button></div>
+        <p class="miudo">${esc(fmtDiaLongo(g.data + 'T12:00:00-03:00'))} · ${horas.length} horário${horas.length === 1 ? '' : 's'} livre${horas.length === 1 ? '' : 's'}</p>
+        <div class="horarios" role="group" aria-label="Horários">${horas.map(h => `<button class="hora" data-a="agHora" data-v="${esc(h.inicio)}" aria-pressed="${g.horario && g.horario.inicio === h.inicio}">${fmtHora(h.inicio)}</button>`).join('')}</div>`}`;
   } else {
     const h = g.horario;
     corpo = `<div class="cab-etapa">${rot}<h2>Confira e confirme</h2></div>
     <div class="cartao"><dl class="resumo">
-      <div><dt>Serviço</dt><dd>${esc(sv.nome)}</dd></div>
-      ${conv ? `<div><dt>Atendimento</dt><dd>${esc(conv.nome)}</dd></div>` : ''}
-      <div><dt>Profissional</dt><dd>${esc(h.profissional.nome)}</dd></div>
+      <div><dt>Consulta</dt><dd>${esc(sv.nome)}${m && m.nome ? ' · ' + esc(m.nome) : ''}</dd></div>
+      <div><dt>Profissional</dt><dd>${esc(p.nome)}</dd></div>
       <div><dt>Dia</dt><dd>${esc(fmtDiaLongo(h.inicio))}</dd></div>
       <div><dt>Horário</dt><dd>${fmtHora(h.inicio)}</dd></div>
+      ${conv ? `<div><dt>Atendimento</dt><dd>${esc(conv.nome)}</dd></div>` : ''}
+      ${conv && conv.valor != null ? `<div><dt>Valor</dt><dd>${moeda(conv.valor)}</dd></div>` : ''}
       ${g.remarcar ? `<div><dt>Substitui</dt><dd>${esc(fmtDiaCurto(g.remarcar.inicio))}, ${fmtHora(g.remarcar.inicio)}</dd></div>` : ''}
     </dl></div>
-    ${PREPAROS[sv.categoria] && sv.categoria !== 'consulta' ? `<div class="info-msg">Este exame tem preparo. Você poderá ver as orientações em “Preparo”.</div>` : ''}
+    ${conv && conv.valor == null && !/reembolso/i.test(conv.nome) ? `<div class="info-msg">Leve a carteirinha do convênio e um documento com foto.</div>` : ''}
     <button class="btn btn-primario btn-bloco" data-a="agConfirmar" ${S.ocupado ? 'disabled' : ''}>${S.ocupado ? 'Confirmando…' : g.remarcar ? 'Confirmar novo horário' : 'Confirmar agendamento'}</button>`;
   }
   return `${barra}${voltar ? `<div>${voltar}</div>` : ''}${erroCaixa()}${corpo}`;
@@ -744,20 +762,30 @@ document.addEventListener('click', async e => {
       case 'ir': ir(v); break;
       case 'verPreparo': ir('preparo', { preparoAberto: v }); break;
       case 'abaLista': S.abaLista = v; S.cancelando = null; render(); break;
-      case 'agServico': g.servico = v; g.profissional = null; g.data = null; g.horarios = null; g.horario = null; irPara(depoisDoServico()); break;
-      case 'agConv': g.convenio = v; guardar.set('pp_convenio', v); g.data = null; g.horarios = null; g.horario = null; irPara('prof'); break;
-      case 'agProf': g.profissional = v; g.data = null; g.horarios = null; g.horario = null; irPara('hora'); break;
-      case 'agVoltar': { const ps = passos(g); g.horario = null; irPara(ps[Math.max(0, ps.indexOf(g.etapa) - 1)]); break }
-      case 'agData': {
-        g.data = v; g.horarios = null; g.horario = null; S.erro = ''; render();
-        const r = await api('GET', `/horarios?servico=${encodeURIComponent(g.servico)}&profissional=${encodeURIComponent(g.profissional)}&data=${v}&convenio=${encodeURIComponent(g.convenio || '')}`);
-        if (g.data === v) { g.horarios = r.horarios || []; render() }
+      case 'agServico': g.servico = v; g.profissional = null; g.modalidade = null; limparAgenda(g); irPara('prof'); break;
+      case 'agProf': {
+        const pp = svAtual(g).profissionais.find(x => x.id === v); if (!pp || pp.disponivel === false) break;
+        g.profissional = v; g.modalidade = pp.modalidades[0].id; limparAgenda(g);
+        if (pp.modalidades.length > 1) { g.modalidade = null; irPara('modalidade'); break }
+        const cs = modAtual(g).convenios;
+        if (cs.length === 1) { g.convenio = cs[0].id; irPara('hora') }
+        else { if (!cs.some(c => c.id === g.convenio)) g.convenio = cs.some(c => c.id === guardar.get('pp_convenio')) ? guardar.get('pp_convenio') : null; irPara('convenio') }
         break;
       }
-      case 'agHora': g.horario = g.horarios[+v]; irPara('conf'); break;
+      case 'agMod': {
+        g.modalidade = v; limparAgenda(g);
+        const cs = modAtual(g).convenios;
+        if (cs.length === 1) { g.convenio = cs[0].id; irPara('hora') } else irPara('convenio');
+        break;
+      }
+      case 'agConv': g.convenio = v; guardar.set('pp_convenio', v); limparAgenda(g); irPara('hora'); break;
+      case 'agVoltar': { const ps = passos(g); g.horario = null; S.ag.etapa = ps[Math.max(0, ps.indexOf(g.etapa) - 1)]; S.erro = ''; render(); window.scrollTo(0, 0); break }
+      case 'agMais': if (!g.buscando) await buscarDias(true); break;
+      case 'agData': g.data = v; g.horario = null; S.erro = ''; render(); break;
+      case 'agHora': g.horario = (g.livres || []).find(h => h.inicio === v); if (g.horario) irPara('conf'); break;
       case 'agConfirmar': {
         S.ocupado = true; S.erro = ''; render();
-        const corpo = { servico: g.servico, profissional: g.horario.profissional.id, inicio: g.horario.inicio, convenio: g.convenio || '' };
+        const corpo = { servico: g.servico, profissional: g.profissional, modalidade: g.modalidade || '', convenio: g.convenio || '', inicio: g.horario.inicio };
         if (g.remarcar) await api('POST', `/agendamentos/${encodeURIComponent(g.remarcar.id)}/remarcar`, corpo);
         else await api('POST', '/agendamentos', corpo);
         S.ocupado = false; const quando = `${fmtDiaCurto(g.horario.inicio)}, ${fmtHora(g.horario.inicio)}`;
