@@ -685,6 +685,10 @@ function telaAgendar() {
 }
 
 /* ---------- Meus agendamentos ---------- */
+function linkWhats(acao, a) {
+  const txt = `Olá! Preciso ${acao} minha ${a.servico.nome} com ${a.profissional.nome}, ${fmtDiaLongo(a.inicio)} às ${fmtHora(a.inicio)}.`;
+  return `https://wa.me/${CONFIG.WHATSAPP}?text=${encodeURIComponent(txt)}`;
+}
 function cartaoAg(a, futuro) {
   const pode = futuro && horasAte(a.inicio) >= CONFIG.ANTECEDENCIA_HORAS;
   const confirmando = S.cancelando === a.id;
@@ -694,7 +698,8 @@ function cartaoAg(a, futuro) {
     ${futuro ? (confirmando ? `<div class="confirmar-caixa"><p>Cancelar este agendamento? O horário será liberado para outro paciente.</p>
         <div class="linha-botoes"><button class="btn btn-linha" data-a="cancelarNao">Manter</button><button class="btn btn-perigo" data-a="cancelarSim" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>${S.ocupado ? 'Cancelando…' : 'Sim, cancelar'}</button></div></div>`
       : pode ? `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<div class="linha-botoes"><button class="btn btn-secundario" data-a="remarcar" data-v="${esc(a.id)}">Remarcar</button><button class="btn btn-linha" data-a="cancelarPedir" data-v="${esc(a.id)}">Cancelar</button></div>`
-      : `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<p class="miudo">Faltam menos de ${CONFIG.ANTECEDENCIA_HORAS}h. Para alterar, fale com a recepção: ${esc(CONFIG.WHATSAPP_EXIBIR)}.</p>`) : ''}
+      : `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<div class="linha-botoes"><a class="btn btn-secundario" href="${linkWhats('remarcar', a)}" target="_blank" rel="noopener">Remarcar</a><a class="btn btn-linha" href="${linkWhats('cancelar', a)}" target="_blank" rel="noopener">Cancelar</a></div>
+        <p class="miudo">Faltam menos de ${CONFIG.ANTECEDENCIA_HORAS}h: a alteração é feita pela recepção, pelo WhatsApp ${esc(CONFIG.WHATSAPP_EXIBIR)}.</p>`) : ''}
     ${futuro && PREPAROS[a.servico.categoria] ? `<button class="btn-texto" data-a="verPreparo" data-v="${esc(a.servico.categoria)}">Ver preparo</button>` : ''}
     ${a.status === 'realizado' && !a.avaliado ? `<button class="btn btn-secundario" data-a="avaliar" data-v="${esc(a.id)}">${I.estrela.replace('<svg', '<svg width="18" height="18"')} Avaliar atendimento</button>` : ''}
     ${a.status === 'realizado' && a.avaliado ? '<p class="miudo">Obrigado pela avaliação.</p>' : ''}
