@@ -688,6 +688,8 @@ function telaAgendar() {
     const dias = Object.keys(porDia).sort();
     const horas = g.data ? porDia[g.data] || [] : [];
     corpo = `<div class="cab-etapa">${rot}<h2>Escolha dia e horário</h2><p class="miudo">${resumo}</p></div>
+    ${m && m.janela ? `<div class="info-msg">${esc(m.nome || 'Este atendimento')}: horários das ${esc(m.janela[0].replace(':', 'h'))} às ${esc(m.janela[1].replace(':', 'h'))}.</div>` : ''}
+    ${m && m.aviso ? `<div class="info-msg">${esc(m.aviso)}</div>` : ''}
     ${!g.livres ? carregando('Buscando os dias com horário livre…')
       : !dias.length ? `<div class="cartao vazio"><p>${esc(p.nome)} não tem horários livres até ${esc(fmt(g.ate + 'T12:00:00-03:00', { day: 'numeric', month: 'long' }))}.</p>
           <button class="btn btn-secundario" data-a="agMais" ${g.buscando ? 'disabled' : ''}>${g.buscando ? 'Buscando…' : 'Ver datas seguintes'}</button>
