@@ -254,7 +254,12 @@ const CONFIG = {
   WHATSAPP_EXIBIR: '(61) 98176-1485',
   // Antecedência mínima (horas) para cancelar ou remarcar pelo app.
   ANTECEDENCIA_HORAS: 24,
-  FUSO: 'America/Sao_Paulo'
+  FUSO: 'America/Sao_Paulo',
+  // Convênios em que o paciente precisa escolher o plano (o nome do convênio é comparado sem acento/maiúsculas)
+  PLANOS: {
+    ASSEFAZ: ['Rubi Apartamento Empresarial', 'Rubi Apartamento', 'Safira Apartamento Empresarial', 'Safira Apartamento',
+      'Safira Enfermaria Empresarial', 'Safira Enfermaria', 'Plano Assefaz Cristal Empresarial']
+  }
 };
 
 /* Orientações de preparo por categoria de serviço.
@@ -404,7 +409,7 @@ async function api(metodo, caminho, corpo) {
 
 /* Simulação: mesmas respostas do servidor real, com dados fictícios. */
 const Simulacao = (() => {
-  const convs = [{ id: '142', nome: 'AFFEGO' }, { id: 'w:BRB', nome: 'BRB (Saúde BRB)', whatsapp: true }, { id: '109', nome: 'PF Saúde (Polícia Federal)' }, { id: '100', nome: 'Saúde Caixa' }, { id: 'w:SERPRO', nome: 'SERPRO', whatsapp: true }];
+  const convs = [{ id: '142', nome: 'AFFEGO' }, { id: 'w:BRB', nome: 'BRB (Saúde BRB)', whatsapp: true }, { id: '109', nome: 'PF Saúde (Polícia Federal)' }, { id: '100', nome: 'Saúde Caixa' }, { id: 'w:SERPRO', nome: 'SERPRO', whatsapp: true }, { id: '154', nome: 'ASSEFAZ' }];
   const prof = (id, nome, esp, valor, comConv = true, extra = {}) => ({ id, nome, especialidade: esp, disponivel: true, aviso: '',
     modalidades: [{ id: 'presencial', nome: '', convenios: [{ id: '88', nome: 'Particular', valor }, ...(comConv ? convs : [])] }], ...extra });
   const servicos = [
@@ -607,9 +612,16 @@ const profAtual = g => { const sv = svAtual(g); return sv && sv.profissionais.fi
 const modAtual = g => { const p = profAtual(g); return p && (p.modalidades.find(m => m.id === g.modalidade) || p.modalidades[0]) };
 const convAtual = g => { const m = modAtual(g); return m && m.convenios.find(c => c.id === g.convenio) };
 // Etapas do fluxo; modalidade e convênio só aparecem quando há mais de uma opção
+function planosDe(conv) {
+  if (!conv) return null;
+  const n = String(conv.nome).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  const k = Object.keys(CONFIG.PLANOS || {}).find(c => n.includes(c));
+  return k ? CONFIG.PLANOS[k] : null;
+}
 function passos(g) {
   const p = profAtual(g), m = modAtual(g);
-  return ['servico', 'prof', ...(p && p.modalidades.length > 1 ? ['modalidade'] : []), ...(!m || m.convenios.length > 1 ? ['convenio'] : []), 'hora', 'conf'];
+  return ['servico', 'prof', ...(p && p.modalidades.length > 1 ? ['modalidade'] : []), ...(!m || m.convenios.length > 1 ? ['convenio'] : []),
+    ...(planosDe(convAtual(g)) ? ['plano'] : []), 'hora', 'conf'];
 }
 function irPara(etapa) {
   S.ag.etapa = etapa; S.erro = ''; render(); window.scrollTo(0, 0);
@@ -664,6 +676,12 @@ function telaAgendar() {
       ? `<a class="op op-whats" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent(`Olá! Quero agendar ${sv.nome} com ${p.nome} pelo convênio ${c.nome}.`)}" target="_blank" rel="noopener"><span class="txt"><b>${esc(c.nome)}</b><span>Agendamento pela recepção · WhatsApp</span></span><span class="seta">${I.whats.replace('<svg', '<svg width="20" height="20"')}</span></a>`
       : `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Agendamento online · leve a carteirinha'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
     <p class="miudo">Não encontrou seu convênio? Fale com a recepção pelo WhatsApp: <b>${esc(CONFIG.WHATSAPP_EXIBIR)}</b>.</p>`;
+  } else if (g.etapa === 'plano') {
+    const planos = planosDe(conv) || [];
+    const txtWhats = `Olá! Tenho ${conv.nome} e meu plano não está na lista do app. Quero agendar ${sv.nome} com ${p.nome}.`;
+    corpo = `<div class="cab-etapa">${rot}<h2>Qual é o seu plano ${esc(conv.nome)}?</h2><p class="miudo">${resumo}</p></div>
+    <div class="lista-op">${planos.map(pl => `<button class="op" data-a="agPlano" data-v="${esc(pl)}" aria-pressed="${g.plano === pl}"><span class="txt"><b>${esc(pl)}</b></span><span class="seta">${I.seta}</span></button>`).join('')}
+      <a class="op op-whats" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent(txtWhats)}" target="_blank" rel="noopener"><span class="txt"><b>Meu plano não está na lista</b><span>Fale com a recepção pelo WhatsApp</span></span><span class="seta">${I.whats.replace('<svg', '<svg width="20" height="20"')}</span></a></div>`;
   } else if (g.etapa === 'hora') {
     const porDia = {};
     for (const h of (g.livres || [])) (porDia[h.inicio.slice(0, 10)] ||= []).push(h);
@@ -687,6 +705,7 @@ function telaAgendar() {
       <div><dt>Dia</dt><dd>${esc(fmtDiaLongo(h.inicio))}</dd></div>
       <div><dt>Horário</dt><dd>${fmtHora(h.inicio)}</dd></div>
       ${conv ? `<div><dt>Atendimento</dt><dd>${esc(conv.nome)}</dd></div>` : ''}
+      ${g.plano && planosDe(conv) ? `<div><dt>Plano</dt><dd>${esc(g.plano)}</dd></div>` : ''}
       ${conv && conv.valor != null ? `<div><dt>Valor</dt><dd>${moeda(conv.valor)}</dd></div>` : ''}
       ${g.remarcar ? `<div><dt>Substitui</dt><dd>${esc(fmtDiaCurto(g.remarcar.inicio))}, ${fmtHora(g.remarcar.inicio)}</dd></div>` : ''}
     </dl></div>
@@ -834,14 +853,15 @@ document.addEventListener('click', async e => {
         if (cs.length === 1) { g.convenio = cs[0].id; irPara('hora') } else irPara('convenio');
         break;
       }
-      case 'agConv': g.convenio = v; guardar.set('pp_convenio', v); limparAgenda(g); irPara('hora'); break;
+      case 'agConv': g.convenio = v; g.plano = null; guardar.set('pp_convenio', v); limparAgenda(g); irPara(planosDe(convAtual(g)) ? 'plano' : 'hora'); break;
+      case 'agPlano': g.plano = v; irPara('hora'); break;
       case 'agVoltar': { const ps = passos(g); g.horario = null; S.ag.etapa = ps[Math.max(0, ps.indexOf(g.etapa) - 1)]; S.erro = ''; render(); window.scrollTo(0, 0); break }
       case 'agMais': if (!g.buscando) await buscarDias(true); break;
       case 'agData': g.data = v; g.horario = null; S.erro = ''; render(); break;
       case 'agHora': g.horario = (g.livres || []).find(h => h.inicio === v); if (g.horario) irPara('conf'); break;
       case 'agConfirmar': {
         S.ocupado = true; S.erro = ''; render();
-        const corpo = { servico: g.servico, profissional: g.profissional, modalidade: g.modalidade || '', convenio: g.convenio || '', inicio: g.horario.inicio };
+        const corpo = { servico: g.servico, profissional: g.profissional, modalidade: g.modalidade || '', convenio: g.convenio || '', plano: (planosDe(convAtual(g)) && g.plano) || '', inicio: g.horario.inicio };
         if (g.remarcar) await api('POST', `/agendamentos/${encodeURIComponent(g.remarcar.id)}/remarcar`, corpo);
         else await api('POST', '/agendamentos', corpo);
         S.ocupado = false; const quando = `${fmtDiaCurto(g.horario.inicio)}, ${fmtHora(g.horario.inicio)}`;
