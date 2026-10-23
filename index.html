@@ -270,6 +270,16 @@ const PREPAROS = {
       'Use roupa confortável: a consulta pode incluir medidas e avaliação física.'
     ]
   },
+  psicologia: {
+    titulo: 'Consulta de psicologia',
+    texto: 'Presencial ou por telemedicina.',
+    itens: [
+      'Presencial: chegue 10 minutos antes do horário e traga um documento com foto.',
+      'Telemedicina: esteja em um lugar reservado e silencioso, com boa conexão de internet.',
+      'Telemedicina: use fone de ouvido e deixe a câmera e o microfone liberados no celular ou computador.',
+      'Se usar medicamentos, tenha a lista em mãos.'
+    ]
+  },
   bioimpedancia: {
     titulo: 'Bioimpedância',
     texto: 'O resultado depende da sua hidratação. Seguir o preparo deixa a medida mais precisa.',
@@ -304,6 +314,8 @@ const PREPAROS = {
     ]
   }
 };
+
+const catDe = sv => sv && /psicolog/i.test(sv.nome || '') ? 'psicologia' : (sv && sv.categoria);
 
 /* =====================================================================
    Utilidades
@@ -576,7 +588,7 @@ function telaInicio() {
   ${p ? `<section class="cartao destaque" aria-label="Próximo agendamento">
       <p class="rotulo">Próximo atendimento</p>
       <div class="data-grande">${blocoData(p.inicio)}<div><h2>${esc(p.servico.nome)}</h2><p class="miudo">${esc(fmtDiaLongo(p.inicio))} às ${fmtHora(p.inicio)} · ${esc(p.profissional.nome)}</p></div></div>
-      <div class="linha-botoes"><button class="btn btn-linha" data-a="ir" data-v="agenda">Ver detalhes</button><button class="btn btn-linha" data-a="verPreparo" data-v="${esc(p.servico.categoria)}">Preparo</button></div>
+      <div class="linha-botoes"><button class="btn btn-linha" data-a="ir" data-v="agenda">Ver detalhes</button><button class="btn btn-linha" data-a="verPreparo" data-v="${esc(catDe(p.servico))}">Preparo</button></div>
     </section>` : `<section class="cartao vazio">${I.agendar}<p>Você não tem atendimentos marcados.</p><button class="btn btn-primario" data-a="ir" data-v="agendar">Agendar agora</button></section>`}
   ${av ? `<section class="cartao"><p class="rotulo">Sua opinião</p><p>Como foi seu atendimento de <b>${esc(av.servico.nome)}</b> em ${fmt(av.inicio, { day: 'numeric', month: 'long' })}?</p><button class="btn btn-secundario" data-a="avaliar" data-v="${esc(av.id)}">Avaliar em 1 minuto</button></section>` : ''}
   <section class="acoes" aria-label="Atalhos">
@@ -701,7 +713,7 @@ function cartaoAg(a, futuro) {
       : pode ? `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<div class="linha-botoes"><button class="btn btn-secundario" data-a="remarcar" data-v="${esc(a.id)}">Remarcar</button><button class="btn btn-linha" data-a="cancelarPedir" data-v="${esc(a.id)}">Cancelar</button></div>`
       : `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<div class="linha-botoes"><a class="btn btn-secundario" href="${linkWhats('remarcar', a)}" target="_blank" rel="noopener">Remarcar</a><a class="btn btn-linha" href="${linkWhats('cancelar', a)}" target="_blank" rel="noopener">Cancelar</a></div>
         <p class="miudo">Faltam menos de ${CONFIG.ANTECEDENCIA_HORAS}h: a alteração é feita pela recepção, pelo WhatsApp ${esc(CONFIG.WHATSAPP_EXIBIR)}.</p>`) : ''}
-    ${futuro && PREPAROS[a.servico.categoria] ? `<button class="btn-texto" data-a="verPreparo" data-v="${esc(a.servico.categoria)}">Ver preparo</button>` : ''}
+    ${futuro && PREPAROS[catDe(a.servico)] ? `<button class="btn-texto" data-a="verPreparo" data-v="${esc(catDe(a.servico))}">Ver preparo</button>` : ''}
     ${a.status === 'realizado' && !a.avaliado ? `<button class="btn btn-secundario" data-a="avaliar" data-v="${esc(a.id)}">${I.estrela.replace('<svg', '<svg width="18" height="18"')} Avaliar atendimento</button>` : ''}
     ${a.status === 'realizado' && a.avaliado ? '<p class="miudo">Obrigado pela avaliação.</p>' : ''}
   </article>`;
