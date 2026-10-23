@@ -661,7 +661,7 @@ function telaAgendar() {
     <div class="lista-op">${S.servicos.map(s => `<button class="op" data-a="agServico" data-v="${esc(s.id)}"><span class="txt"><b>${esc(s.nome)}</b><span>${s.profissionais.length} profissiona${s.profissionais.length > 1 ? 'is' : 'l'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>`;
   } else if (g.etapa === 'prof') {
     corpo = `<div class="cab-etapa">${rot}<h2>Com quem?</h2><p class="miudo">${esc(sv ? sv.nome : '')}</p></div>
-    <div class="lista-op">${(sv ? sv.profissionais : []).map(pp => {
+    <div class="lista-op">${(sv ? sv.profissionais : []).slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(pp => {
       const part = pp.modalidades.map(mm => (mm.convenios.find(c => c.valor != null) || {}).valor).filter(v => v != null);
       const sub = pp.disponivel === false ? esc(pp.aviso) : (part.length ? 'Particular a partir de ' + moeda(Math.min(...part)) : '');
       return `<button class="op" data-a="agProf" data-v="${esc(pp.id)}" ${pp.disponivel === false ? 'disabled aria-disabled="true" style="opacity:.55;cursor:default"' : ''}><span class="avatar">${esc(iniciais(pp.nome))}</span><span class="txt"><b>${esc(pp.nome)}</b><span>${sub}</span></span><span class="seta">${pp.disponivel === false ? '' : I.seta}</span></button>`;
@@ -709,7 +709,9 @@ function telaAgendar() {
       ${conv && conv.valor != null ? `<div><dt>Valor</dt><dd>${moeda(conv.valor)}</dd></div>` : ''}
       ${g.remarcar ? `<div><dt>Substitui</dt><dd>${esc(fmtDiaCurto(g.remarcar.inicio))}, ${fmtHora(g.remarcar.inicio)}</dd></div>` : ''}
     </dl></div>
-    ${conv && conv.valor != null ? `<div class="info-msg"><b>Retorno particular: 30 dias.</b> O retorno desta consulta pode ser agendado em até 30 dias após o atendimento.</div>` : ''}
+    ${conv && conv.valor != null ? (catDe(sv) === 'psicologia'
+      ? `<div class="info-msg"><b>Sem retorno.</b> Cada sessão de psicologia é paga individualmente.</div>`
+      : `<div class="info-msg"><b>Retorno particular: 30 dias.</b> O retorno desta consulta pode ser agendado em até 30 dias após o atendimento.</div>`) : ''}
     ${conv && conv.valor == null && !/reembolso/i.test(conv.nome) ? `<div class="info-msg">Leve a carteirinha do convênio e um documento com foto.</div>` : ''}
     <button class="btn btn-primario btn-bloco" data-a="agConfirmar" ${S.ocupado ? 'disabled' : ''}>${S.ocupado ? 'Confirmando…' : g.remarcar ? 'Confirmar novo horário' : 'Confirmar agendamento'}</button>`;
   }
