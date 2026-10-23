@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pantheon">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=3">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
@@ -33,7 +33,7 @@
   --acento-2: #8A6CF2;
   --acento-suave: #EFEBFD;
   --ouro: #A6803A;
-  --ouro-claro: #E9D6AB;
+  --ouro-claro: #D9AE58;
   --ok: #17845A; --ok-suave: #E3F5EC;
   --alerta: #9A6B0E; --alerta-suave: #FBF1DC;
   --erro: #C0392F; --erro-suave: #FCE9E7;
@@ -375,7 +375,7 @@ const STATUS = { agendado: 'Agendado', confirmado: 'Confirmado', realizado: 'Rea
 
 /* Ícones */
 const I = {
-  marca: '<svg class="marca" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 15 24 6l18 9"/><path d="M8 15h32"/><path d="M12 19v18M20 19v18M28 19v18M36 19v18"/><path d="M7 41h34M9 37h30"/></svg>',
+  marca: '<svg class="marca" viewBox="0 0 48 48" fill="none" stroke="url(#ouroMetal)" stroke-width="2.2" aria-hidden="true"><defs><linearGradient id="ouroMetal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#B88A3A"/><stop offset=".45" stop-color="#F6DC9C"/><stop offset=".6" stop-color="#D4A64A"/><stop offset="1" stop-color="#9A6C24"/></linearGradient></defs><path d="M6 15 24 6l18 9"/><path d="M8 15h32"/><path d="M12 19v18M20 19v18M28 19v18M36 19v18"/><path d="M7 41h34M9 37h30"/></svg>',
   inicio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 10.5 12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>',
   agendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M12 12.5v5M9.5 15h5"/></svg>',
   lista: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M7.5 13.5h3M7.5 17h6"/></svg>',
