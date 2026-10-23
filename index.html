@@ -431,7 +431,7 @@ const Simulacao = (() => {
     { id: 's3', nome: 'Consulta – Psicologia', categoria: 'consulta', profissionais: [{ id: 'p5', nome: 'Clara Nunes', especialidade: 'Psicologia', disponivel: true, aviso: '',
       modalidades: [{ id: 'presencial', nome: 'Presencial', convenios: [{ id: '88', nome: 'Particular', valor: 150 }] }, { id: 'telemedicina', nome: 'Telemedicina', convenios: [{ id: '88', nome: 'Particular', valor: 100 }] }] }] },
     { id: 's4', nome: 'Medicação', categoria: 'medicacao', profissionais: [{ id: 'p6', nome: 'Sala de medicação', especialidade: '', disponivel: true, aviso: '',
-      modalidades: [{ id: 'endovenoso', nome: 'Endovenoso', janela: ['08:00', '11:00'], convenios: [{ id: '88', nome: 'Particular' }] }, { id: 'aplicacao', nome: '', convenios: [{ id: '88', nome: 'Particular' }] }] }],
+      modalidades: [{ id: 'endovenoso', nome: 'Endovenoso', ev: true, janelas: [['08:00', '11:00'], ['14:00', '16:20']], convenios: [{ id: '88', nome: 'Particular' }] }, { id: 'aplicacao', nome: '', janelas: [['00:00', '11:45'], ['12:00', '16:40']], convenios: [{ id: '88', nome: 'Particular' }] }] }],
       medicacoes: [['Medicações gerais', 'Complexo B (EV)', 350], ['Medicações gerais', 'Complexo B (IM)', 250], ['Medicações gerais', 'Vitamina B12 (EV)', 350], ['Medicações gerais', 'Vitamina B12 (IM)', 250], ['Medicações gerais', 'Vitamina D (IM)', 250],
         ['Tirzepatida', 'Tirzepatida 2,5mg', 270], ['Tirzepatida', 'Tirzepatida 5mg', 540], ['Semaglutida', 'Semaglutida 20UI', 120]].map(([grupo, nome, preco]) => ({ id: grupo + ':' + nome, grupo, nome, preco, ev: /\(EV\)/.test(nome) })) }
   ];
@@ -485,7 +485,10 @@ const Simulacao = (() => {
     }
     if (!token) erro('Entre novamente.');
     if (rota === '/servicos') return { servicos };
-    if (rota === '/horarios') { const jan = q.modalidade === 'endovenoso' ? ['08:00', '11:00'] : null; return { horarios: livres(q.profissional, q.de || q.data, q.ate || q.data).filter(h => !jan || (h.inicio.slice(11, 16) >= jan[0] && h.inicio.slice(11, 16) <= jan[1])) } }
+    if (rota === '/horarios') {
+      const md = (pf(q.profissional).modalidades.find(x => x.id === q.modalidade) || {}).janelas;
+      return { horarios: livres(q.profissional, q.de || q.data, q.ate || q.data).filter(h => !md || md.some(([a, b]) => h.inicio.slice(11, 16) >= a && h.inicio.slice(11, 16) <= b)) };
+    }
     if (rota === '/agendamentos' && metodo === 'GET') return { agendamentos: ags.map(pubAg) };
     const reservar = (servico) => {
       const l = livres(corpo.profissional, corpo.inicio.slice(0, 10), corpo.inicio.slice(0, 10)).find(h => h.inicio === corpo.inicio);
@@ -646,11 +649,13 @@ function irPara(etapa) {
   S.ag.etapa = etapa; S.erro = ''; render(); window.scrollTo(0, 0);
   if (etapa === 'hora' && !S.ag.livres) buscarDias();
 }
+const descJanelas = js => (js || []).map(([a, b]) => (a <= '00:00' || a === '12:00' ? 'até ' : `das ${a.replace(':00', 'h').replace(':', 'h')} às `) + b.replace(':00', 'h').replace(':', 'h')).join(' e ');
+const janelasEV = sv => { const p = sv && sv.profissionais[0]; const m = p && p.modalidades.find(x => x.ev); return m && m.janelas ? descJanelas(m.janelas) : '' };
 const itensSel = g => { const sv = svAtual(g); return sv && sv.medicacoes ? sv.medicacoes.filter(m => (g.itens || []).includes(m.id)) : [] };
 // Define a modalidade pela escolha: alguma EV usa a modalidade com janela de horário (endovenoso)
 function modalidadePelosItens(g) {
   const p = profAtual(g); if (!p) return null;
-  const comJanela = p.modalidades.find(m => m.janela), outra = p.modalidades.find(m => !m.janela) || p.modalidades[0];
+  const comJanela = p.modalidades.find(m => m.ev), outra = p.modalidades.find(m => !m.ev) || p.modalidades[0];
   return (itensSel(g).some(m => m.ev) && comJanela ? comJanela : outra).id;
 }
 function limparAgenda(g) { g.livres = null; g.ate = null; g.data = null; g.horario = null }
@@ -695,11 +700,11 @@ function telaAgendar() {
   } else if (g.etapa === 'itens') {
     const sel = itensSel(g), totalSel = sel.reduce((t, m) => t + m.preco, 0);
     const grupos = [...new Set(sv.medicacoes.map(m => m.grupo))];
-    corpo = `<div class="cab-etapa">${rot}<h2>Quais medicações?</h2><p class="miudo">Marque uma ou mais. Endovenosas (EV): horários das 08h às 11h.</p></div>
+    corpo = `<div class="cab-etapa">${rot}<h2>Quais medicações?</h2><p class="miudo">Marque uma ou mais.${janelasEV(sv) ? ' Endovenosas (EV): horários ' + esc(janelasEV(sv)) + '.' : ''}</p></div>
     <button class="op" data-a="agPacote" aria-pressed="${!!g.pacote}"><span class="caixa ${g.pacote ? 'marcada' : ''}" aria-hidden="true"></span><span class="txt"><b>Já paguei (pacote mensal)</b><span>A recepção confere o pagamento no atendimento</span></span></button>
     ${grupos.map(gr => `<div class="grupo-med"><p class="rotulo">${esc(gr)}</p><div class="lista-op">${sv.medicacoes.filter(m => m.grupo === gr).map(m => {
       const on = (g.itens || []).includes(m.id);
-      return `<button class="op op-check" data-a="agItem" data-v="${esc(m.id)}" aria-pressed="${on}"><span class="caixa ${on ? 'marcada' : ''}" aria-hidden="true"></span><span class="txt"><b>${esc(m.nome)}</b>${m.ev ? '<span>Endovenosa · 08h às 11h</span>' : ''}</span><span class="preco ${g.pacote ? 'riscado' : ''}">${moeda(m.preco)}</span></button>`;
+      return `<button class="op op-check" data-a="agItem" data-v="${esc(m.id)}" aria-pressed="${on}"><span class="caixa ${on ? 'marcada' : ''}" aria-hidden="true"></span><span class="txt"><b>${esc(m.nome)}</b>${m.ev ? `<span>Endovenosa · ${esc(janelasEV(sv))}</span>` : ''}</span><span class="preco ${g.pacote ? 'riscado' : ''}">${moeda(m.preco)}</span></button>`;
     }).join('')}</div></div>`).join('')}
     <div class="barra-total"><div><span class="miudo">${sel.length} selecionada${sel.length === 1 ? '' : 's'}</span><b>${g.pacote ? 'Pacote já pago' : moeda(totalSel)}</b></div>
       <button class="btn btn-primario" data-a="agItensOk" ${sel.length ? '' : 'disabled'}>Continuar</button></div>`;
@@ -732,7 +737,7 @@ function telaAgendar() {
     const dias = Object.keys(porDia).sort();
     const horas = g.data ? porDia[g.data] || [] : [];
     corpo = `<div class="cab-etapa">${rot}<h2>Escolha dia e horário</h2><p class="miudo">${resumo}</p></div>
-    ${m && m.janela ? `<div class="info-msg">${esc(m.nome || 'Este atendimento')}: horários das ${esc(m.janela[0].replace(':', 'h'))} às ${esc(m.janela[1].replace(':', 'h'))}.</div>` : ''}
+    ${m && m.janelas ? `<div class="info-msg">${m.nome ? esc(m.nome) + ': h' : 'H'}orários ${esc(descJanelas(m.janelas))}.</div>` : ''}
     ${m && m.aviso ? `<div class="info-msg">${esc(m.aviso)}</div>` : ''}
     ${!g.livres ? carregando('Buscando os dias com horário livre…')
       : !dias.length ? `<div class="cartao vazio"><p>${esc(p.nome)} não tem horários livres até ${esc(fmt(g.ate + 'T12:00:00-03:00', { day: 'numeric', month: 'long' }))}.</p>
