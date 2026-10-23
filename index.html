@@ -180,6 +180,19 @@ main { max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-i
 .resumo dt { color: var(--texto-2); font-size: 13px }
 .resumo dd { margin: 0; font-weight: 600; text-align: right }
 
+/* Medicações */
+.grupo-med { display: grid; gap: 8px }
+.op .caixa { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--linha-forte); background: var(--superficie); display: grid; place-items: center }
+.op .caixa.marcada { background: linear-gradient(155deg, #2C2050, #5A3ED0); border-color: transparent }
+.op .caixa.marcada::after { content: ""; width: 10px; height: 6px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px, -1px) }
+.op .preco { flex: none; font-family: var(--f-mono); font-weight: 600; font-size: 13.5px; color: var(--tinta) }
+.op .preco.riscado { text-decoration: line-through; color: var(--texto-3) }
+.barra-total { position: sticky; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--vidro); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--linha); border-radius: 18px; padding: 10px 10px 10px 16px; box-shadow: var(--sombra-alta) }
+.barra-total > div { display: grid; gap: 0 }
+.barra-total b { font-family: var(--f-mono); font-size: 18px; color: var(--tinta) }
+.barra-total .btn { padding: 12px 20px }
+
 /* Agendamentos */
 .abas { display: grid; grid-template-columns: 1fr 1fr; background: var(--neutro-suave); border-radius: 14px; padding: 4px; gap: 4px }
 .abas button { background: none; border: 0; padding: 9px; border-radius: 10px; font-weight: 600; color: var(--texto-2) }
@@ -416,7 +429,11 @@ const Simulacao = (() => {
     { id: 's1', nome: 'Consulta – Nutrologia', categoria: 'consulta', profissionais: [prof('p1', 'Helena Duarte', 'Nutrologia', 450), prof('p2', 'Rafael Moura', 'Nutrologia', 550)] },
     { id: 's2', nome: 'Consulta – Endocrinologia', categoria: 'consulta', profissionais: [prof('p3', 'Lívia Campos', 'Endocrinologia', 700, false), prof('p4', 'André Lins', 'Endocrinologia', 450, true, { disponivel: false, aviso: 'Atende a partir de 16 anos' })] },
     { id: 's3', nome: 'Consulta – Psicologia', categoria: 'consulta', profissionais: [{ id: 'p5', nome: 'Clara Nunes', especialidade: 'Psicologia', disponivel: true, aviso: '',
-      modalidades: [{ id: 'presencial', nome: 'Presencial', convenios: [{ id: '88', nome: 'Particular', valor: 150 }] }, { id: 'telemedicina', nome: 'Telemedicina', convenios: [{ id: '88', nome: 'Particular', valor: 100 }] }] }] }
+      modalidades: [{ id: 'presencial', nome: 'Presencial', convenios: [{ id: '88', nome: 'Particular', valor: 150 }] }, { id: 'telemedicina', nome: 'Telemedicina', convenios: [{ id: '88', nome: 'Particular', valor: 100 }] }] }] },
+    { id: 's4', nome: 'Medicação', categoria: 'medicacao', profissionais: [{ id: 'p6', nome: 'Sala de medicação', especialidade: '', disponivel: true, aviso: '',
+      modalidades: [{ id: 'endovenoso', nome: 'Endovenoso', janela: ['08:00', '11:00'], convenios: [{ id: '88', nome: 'Particular' }] }, { id: 'aplicacao', nome: '', convenios: [{ id: '88', nome: 'Particular' }] }] }],
+      medicacoes: [['Medicações gerais', 'Complexo B (EV)', 350], ['Medicações gerais', 'Complexo B (IM)', 250], ['Medicações gerais', 'Vitamina B12 (EV)', 350], ['Medicações gerais', 'Vitamina B12 (IM)', 250], ['Medicações gerais', 'Vitamina D (IM)', 250],
+        ['Tirzepatida', 'Tirzepatida 2,5mg', 270], ['Tirzepatida', 'Tirzepatida 5mg', 540], ['Semaglutida', 'Semaglutida 20UI', 120]].map(([grupo, nome, preco]) => ({ id: grupo + ':' + nome, grupo, nome, preco, ev: /\(EV\)/.test(nome) })) }
   ];
   const contas = { '52998224725': { senha: 'pantheon123', nascimento: '1990-05-12', nome: 'Mariana Souza' } };
   const dia = n => diaSP(new Date(Date.now() + n * 864e5));
@@ -429,9 +446,9 @@ const Simulacao = (() => {
     { id: 'a3', inicio: dia(-12) + 'T14:00:00-03:00', servico: 's1', prof: 'p2', status: 'realizado', avaliado: false },
     { id: 'a4', inicio: dia(-40) + 'T08:30:00-03:00', servico: 's2', prof: 'p3', status: 'cancelado' }
   ];
-  const pubAg = a => ({ id: a.id, inicio: a.inicio, status: a.status, avaliado: !!a.avaliado, servico: { id: a.servico, nome: sv(a.servico).nome, categoria: sv(a.servico).categoria }, profissional: { id: a.prof, nome: pf(a.prof).nome } });
+  const pubAg = a => ({ id: a.id, inicio: a.inicio, status: a.status, avaliado: !!a.avaliado, servico: { id: a.servico, nome: sv(a.servico).nome, categoria: sv(a.servico).categoria }, profissional: { id: a.prof, nome: pf(a.prof).nome }, ...(a.med || {}) });
   // Cada profissional atende em alguns dias da semana
-  const diasDoProf = { p1: [1, 3, 5], p2: [2, 4], p3: [2], p4: [1, 4], p5: [1, 2, 3, 4, 5] };
+  const diasDoProf = { p1: [1, 3, 5], p2: [2, 4], p3: [2], p4: [1, 4], p5: [1, 2, 3, 4, 5], p6: [1, 2, 3, 4, 5, 6] };
   function livres(profId, de, ate) {
     const out = [];
     for (let t = new Date(de + 'T12:00:00-03:00').getTime(); diaSP(new Date(t)) <= ate; t += 864e5) {
@@ -468,12 +485,13 @@ const Simulacao = (() => {
     }
     if (!token) erro('Entre novamente.');
     if (rota === '/servicos') return { servicos };
-    if (rota === '/horarios') return { horarios: livres(q.profissional, q.de || q.data, q.ate || q.data) };
+    if (rota === '/horarios') { const jan = q.modalidade === 'endovenoso' ? ['08:00', '11:00'] : null; return { horarios: livres(q.profissional, q.de || q.data, q.ate || q.data).filter(h => !jan || (h.inicio.slice(11, 16) >= jan[0] && h.inicio.slice(11, 16) <= jan[1])) } }
     if (rota === '/agendamentos' && metodo === 'GET') return { agendamentos: ags.map(pubAg) };
     const reservar = (servico) => {
       const l = livres(corpo.profissional, corpo.inicio.slice(0, 10), corpo.inicio.slice(0, 10)).find(h => h.inicio === corpo.inicio);
       if (!l) erro('Esse horário acabou de ser ocupado. Escolha outro.');
       const n = { id: 'a' + (++seq), inicio: corpo.inicio, servico, prof: corpo.profissional, status: 'agendado' };
+      if (corpo.itens) { const ms = sv(servico).medicacoes.filter(m => corpo.itens.includes(m.id)); n.med = { medicacoes: ms.map(m => ({ nome: m.nome, preco: m.preco })), total: ms.reduce((t, m) => t + m.preco, 0), pacote: !!corpo.pacote } }
       ags.push(n); return n;
     };
     if (rota === '/agendamentos' && metodo === 'POST') return { agendamento: pubAg(reservar(corpo.servico)) };
@@ -620,12 +638,20 @@ function planosDe(conv) {
 }
 function passos(g) {
   const p = profAtual(g), m = modAtual(g);
+  if (svAtual(g) && svAtual(g).medicacoes) return ['servico', 'itens', 'hora', 'conf'];
   return ['servico', 'prof', ...(p && p.modalidades.length > 1 ? ['modalidade'] : []), ...(!m || m.convenios.length > 1 ? ['convenio'] : []),
     ...(planosDe(convAtual(g)) ? ['plano'] : []), 'hora', 'conf'];
 }
 function irPara(etapa) {
   S.ag.etapa = etapa; S.erro = ''; render(); window.scrollTo(0, 0);
   if (etapa === 'hora' && !S.ag.livres) buscarDias();
+}
+const itensSel = g => { const sv = svAtual(g); return sv && sv.medicacoes ? sv.medicacoes.filter(m => (g.itens || []).includes(m.id)) : [] };
+// Define a modalidade pela escolha: alguma EV usa a modalidade com janela de horário (endovenoso)
+function modalidadePelosItens(g) {
+  const p = profAtual(g); if (!p) return null;
+  const comJanela = p.modalidades.find(m => m.janela), outra = p.modalidades.find(m => !m.janela) || p.modalidades[0];
+  return (itensSel(g).some(m => m.ev) && comJanela ? comJanela : outra).id;
 }
 function limparAgenda(g) { g.livres = null; g.ate = null; g.data = null; g.horario = null }
 async function buscarDias(mais) {
@@ -644,7 +670,14 @@ async function buscarDias(mais) {
 }
 function novoFluxo(remarcar) {
   S.ag = { etapa: 'servico', servico: null, profissional: null, modalidade: null, convenio: null, livres: null, ate: null, data: null, horario: null, remarcar: remarcar || null };
-  if (remarcar) { S.ag.servico = remarcar.servico.id; S.ag.etapa = 'prof' }
+  if (remarcar) {
+    S.ag.servico = remarcar.servico.id; S.ag.etapa = 'prof';
+    const sv = svAtual(S.ag);
+    if (sv && sv.medicacoes) {
+      S.ag.etapa = 'itens'; S.ag.profissional = sv.profissionais[0].id; S.ag.pacote = !!remarcar.pacote;
+      S.ag.itens = sv.medicacoes.filter(m => (remarcar.medicacoes || []).some(x => x.nome === m.nome)).map(m => m.id);
+    }
+  }
 }
 function telaAgendar() {
   if (!S.servicos) return carregando();
@@ -659,6 +692,17 @@ function telaAgendar() {
   if (g.etapa === 'servico') {
     corpo = `<div class="cab-etapa">${rot}<h2>Qual consulta você quer agendar?</h2></div>
     <div class="lista-op">${S.servicos.map(s => `<button class="op" data-a="agServico" data-v="${esc(s.id)}"><span class="txt"><b>${esc(s.nome)}</b><span>${s.profissionais.length} profissiona${s.profissionais.length > 1 ? 'is' : 'l'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>`;
+  } else if (g.etapa === 'itens') {
+    const sel = itensSel(g), totalSel = sel.reduce((t, m) => t + m.preco, 0);
+    const grupos = [...new Set(sv.medicacoes.map(m => m.grupo))];
+    corpo = `<div class="cab-etapa">${rot}<h2>Quais medicações?</h2><p class="miudo">Marque uma ou mais. Endovenosas (EV): horários das 08h às 11h.</p></div>
+    <button class="op" data-a="agPacote" aria-pressed="${!!g.pacote}"><span class="caixa ${g.pacote ? 'marcada' : ''}" aria-hidden="true"></span><span class="txt"><b>Já paguei (pacote mensal)</b><span>A recepção confere o pagamento no atendimento</span></span></button>
+    ${grupos.map(gr => `<div class="grupo-med"><p class="rotulo">${esc(gr)}</p><div class="lista-op">${sv.medicacoes.filter(m => m.grupo === gr).map(m => {
+      const on = (g.itens || []).includes(m.id);
+      return `<button class="op op-check" data-a="agItem" data-v="${esc(m.id)}" aria-pressed="${on}"><span class="caixa ${on ? 'marcada' : ''}" aria-hidden="true"></span><span class="txt"><b>${esc(m.nome)}</b>${m.ev ? '<span>Endovenosa · 08h às 11h</span>' : ''}</span><span class="preco ${g.pacote ? 'riscado' : ''}">${moeda(m.preco)}</span></button>`;
+    }).join('')}</div></div>`).join('')}
+    <div class="barra-total"><div><span class="miudo">${sel.length} selecionada${sel.length === 1 ? '' : 's'}</span><b>${g.pacote ? 'Pacote já pago' : moeda(totalSel)}</b></div>
+      <button class="btn btn-primario" data-a="agItensOk" ${sel.length ? '' : 'disabled'}>Continuar</button></div>`;
   } else if (g.etapa === 'prof') {
     corpo = `<div class="cab-etapa">${rot}<h2>Com quem?</h2><p class="miudo">${esc(sv ? sv.nome : '')}</p></div>
     <div class="lista-op">${(sv ? sv.profissionais : []).slice().sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR')).map(pp => {
@@ -702,7 +746,9 @@ function telaAgendar() {
     const h = g.horario;
     corpo = `<div class="cab-etapa">${rot}<h2>Confira e confirme</h2></div>
     <div class="cartao"><dl class="resumo">
-      <div><dt>Consulta</dt><dd>${esc(sv.nome)}${m && m.nome ? ' · ' + esc(m.nome) : ''}</dd></div>
+      <div><dt>${sv.medicacoes ? 'Serviço' : 'Consulta'}</dt><dd>${esc(sv.nome)}${m && m.nome ? ' · ' + esc(m.nome) : ''}</dd></div>
+      ${sv.medicacoes ? `<div><dt>Medicações</dt><dd>${itensSel(g).map(x => esc(x.nome) + (g.pacote ? '' : ' · ' + moeda(x.preco))).join('<br>')}</dd></div>
+      <div><dt>Total</dt><dd>${g.pacote ? 'Pacote já pago (a recepção confere)' : moeda(itensSel(g).reduce((t, x) => t + x.preco, 0))}</dd></div>` : ''}
       <div><dt>Profissional</dt><dd>${esc(p.nome)}</dd></div>
       <div><dt>Dia</dt><dd>${esc(fmtDiaLongo(h.inicio))}</dd></div>
       <div><dt>Horário</dt><dd>${fmtHora(h.inicio)}</dd></div>
@@ -711,6 +757,7 @@ function telaAgendar() {
       ${conv && conv.valor != null ? `<div><dt>Valor</dt><dd>${moeda(conv.valor)}</dd></div>` : ''}
       ${g.remarcar ? `<div><dt>Substitui</dt><dd>${esc(fmtDiaCurto(g.remarcar.inicio))}, ${fmtHora(g.remarcar.inicio)}</dd></div>` : ''}
     </dl></div>
+    ${sv.medicacoes ? `<div class="info-msg"><b>Traga a prescrição médica</b> das medicações no dia da aplicação.</div>` : ''}
     ${conv && conv.valor != null ? (catDe(sv) === 'psicologia'
       ? `<div class="info-msg"><b>Sem retorno.</b> Cada sessão de psicologia é paga individualmente.</div>`
       : `<div class="info-msg"><b>Retorno particular: 30 dias.</b> O retorno desta consulta pode ser agendado em até 30 dias após o atendimento.</div>`) : ''}
@@ -731,6 +778,7 @@ function cartaoAg(a, futuro) {
   return `<article class="cartao ag">
     <div class="ag-cab"><div><h3>${esc(a.servico.nome)}</h3><p class="miudo">${esc(a.profissional.nome)}</p></div><span class="pilula st-${esc(a.status)}">${esc(STATUS[a.status] || a.status)}</span></div>
     <p class="ag-quando">${esc(fmtDiaLongo(a.inicio))} · ${fmtHora(a.inicio)}</p>
+    ${a.medicacoes ? `<p class="miudo">${a.medicacoes.map(x => esc(x.nome)).join(' + ')} · ${a.pacote ? 'pacote já pago' : moeda(a.total)}</p>` : ''}
     ${futuro ? (confirmando ? `<div class="confirmar-caixa"><p>Cancelar este agendamento? O horário será liberado para outro paciente.</p>
         <div class="linha-botoes"><button class="btn btn-linha" data-a="cancelarNao">Manter</button><button class="btn btn-perigo" data-a="cancelarSim" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>${S.ocupado ? 'Cancelando…' : 'Sim, cancelar'}</button></div></div>`
       : pode ? `${a.status === 'agendado' ? `<button class="btn btn-primario" data-a="confirmarPresenca" data-v="${esc(a.id)}" ${S.ocupado ? 'disabled' : ''}>Confirmar presença</button>` : ''}<div class="linha-botoes"><button class="btn btn-secundario" data-a="remarcar" data-v="${esc(a.id)}">Remarcar</button><button class="btn btn-linha" data-a="cancelarPedir" data-v="${esc(a.id)}">Cancelar</button></div>`
@@ -841,7 +889,21 @@ document.addEventListener('click', async e => {
       case 'ir': ir(v); break;
       case 'verPreparo': ir('preparo', { preparoAberto: v }); break;
       case 'abaLista': S.abaLista = v; S.cancelando = null; render(); break;
-      case 'agServico': g.servico = v; g.profissional = null; g.modalidade = null; limparAgenda(g); irPara('prof'); break;
+      case 'agServico': {
+        g.servico = v; g.profissional = null; g.modalidade = null; limparAgenda(g);
+        const sv = svAtual(g);
+        if (sv && sv.medicacoes) { g.profissional = sv.profissionais[0].id; g.itens = []; g.pacote = false; irPara('itens') } else irPara('prof');
+        break;
+      }
+      case 'agItem': { const l = new Set(g.itens || []); l.has(v) ? l.delete(v) : l.add(v); g.itens = [...l]; render(); break }
+      case 'agPacote': g.pacote = !g.pacote; render(); break;
+      case 'agItensOk': {
+        if (!itensSel(g).length) break;
+        const mod = modalidadePelosItens(g);
+        if (mod !== g.modalidade) { g.modalidade = mod; limparAgenda(g) }
+        g.convenio = (modAtual(g).convenios.find(c => !c.whatsapp) || {}).id || null;
+        irPara('hora'); break;
+      }
       case 'agProf': {
         const pp = svAtual(g).profissionais.find(x => x.id === v); if (!pp || pp.disponivel === false) break;
         g.profissional = v; g.modalidade = pp.modalidades[0].id; limparAgenda(g);
@@ -865,7 +927,7 @@ document.addEventListener('click', async e => {
       case 'agHora': g.horario = (g.livres || []).find(h => h.inicio === v); if (g.horario) irPara('conf'); break;
       case 'agConfirmar': {
         S.ocupado = true; S.erro = ''; render();
-        const corpo = { servico: g.servico, profissional: g.profissional, modalidade: g.modalidade || '', convenio: g.convenio || '', plano: (planosDe(convAtual(g)) && g.plano) || '', inicio: g.horario.inicio };
+        const corpo = { servico: g.servico, profissional: g.profissional, modalidade: g.modalidade || '', convenio: g.convenio || '', plano: (planosDe(convAtual(g)) && g.plano) || '', inicio: g.horario.inicio, ...(svAtual(g).medicacoes ? { itens: g.itens, pacote: !!g.pacote } : {}) };
         if (g.remarcar) await api('POST', `/agendamentos/${encodeURIComponent(g.remarcar.id)}/remarcar`, corpo);
         else await api('POST', '/agendamentos', corpo);
         S.ocupado = false; const quando = `${fmtDiaCurto(g.horario.inicio)}, ${fmtHora(g.horario.inicio)}`;
