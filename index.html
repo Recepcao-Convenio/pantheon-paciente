@@ -674,7 +674,7 @@ function telaAgendar() {
     corpo = `<div class="cab-etapa">${rot}<h2>Particular ou convênio?</h2><p class="miudo">${resumo}</p></div>
     <div class="lista-op">${m.convenios.map(c => c.whatsapp
       ? `<a class="op op-whats" href="https://wa.me/${esc(CONFIG.WHATSAPP)}?text=${encodeURIComponent(`Olá! Quero agendar ${sv.nome} com ${p.nome} pelo convênio ${c.nome}.`)}" target="_blank" rel="noopener"><span class="txt"><b>${esc(c.nome)}</b><span>Agendamento pela recepção · WhatsApp</span></span><span class="seta">${I.whats.replace('<svg', '<svg width="20" height="20"')}</span></a>`
-      : `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Agendamento online · leve a carteirinha'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
+      : `<button class="op" data-a="agConv" data-v="${esc(c.id)}" aria-pressed="${g.convenio === c.id}"><span class="txt"><b>${esc(c.nome)}</b><span>${c.valor != null ? moeda(c.valor) + ' · pagamento na clínica' : /^particular$/i.test(c.nome) ? 'Pagamento na clínica' : /reembolso/i.test(c.nome) ? 'Pagamento na clínica, com reembolso pelo plano' : 'Agendamento online · leve a carteirinha'}</span></span><span class="seta">${I.seta}</span></button>`).join('')}</div>
     <p class="miudo">Não encontrou seu convênio? Fale com a recepção pelo WhatsApp: <b>${esc(CONFIG.WHATSAPP_EXIBIR)}</b>.</p>`;
   } else if (g.etapa === 'plano') {
     const planos = planosDe(conv) || [];
@@ -714,7 +714,7 @@ function telaAgendar() {
     ${conv && conv.valor != null ? (catDe(sv) === 'psicologia'
       ? `<div class="info-msg"><b>Sem retorno.</b> Cada sessão de psicologia é paga individualmente.</div>`
       : `<div class="info-msg"><b>Retorno particular: 30 dias.</b> O retorno desta consulta pode ser agendado em até 30 dias após o atendimento.</div>`) : ''}
-    ${conv && conv.valor == null && !/reembolso/i.test(conv.nome) ? `<div class="info-msg">Leve a carteirinha do convênio e um documento com foto.</div>` : ''}
+    ${conv && conv.valor == null && !/reembolso|^particular$/i.test(conv.nome) ? `<div class="info-msg">Leve a carteirinha do convênio e um documento com foto.</div>` : ''}
     <button class="btn btn-primario btn-bloco" data-a="agConfirmar" ${S.ocupado ? 'disabled' : ''}>${S.ocupado ? 'Confirmando…' : g.remarcar ? 'Confirmar novo horário' : 'Confirmar agendamento'}</button>`;
   }
   return `${barra}${voltar ? `<div>${voltar}</div>` : ''}${erroCaixa()}${corpo}`;
