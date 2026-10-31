@@ -406,13 +406,18 @@ const DEMO = !CONFIG.API_URL;
 async function api(metodo, caminho, corpo) {
   if (DEMO) return Simulacao.tratar(metodo, caminho, corpo, S.token);
   let r;
+  const ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const limite = setTimeout(() => ctl && ctl.abort(), 30000);
   try {
     r = await fetch(CONFIG.API_URL.replace(/\/$/, '') + caminho, {
       method: metodo,
       headers: { 'Content-Type': 'application/json', ...(S.token ? { Authorization: 'Bearer ' + S.token } : {}) },
-      body: corpo ? JSON.stringify(corpo) : undefined
+      body: corpo ? JSON.stringify(corpo) : undefined,
+      signal: ctl ? ctl.signal : undefined
     });
-  } catch (e) { throw new Error('Sem conexão com a clínica. Verifique sua internet e tente de novo.') }
+  } catch (e) {
+    throw new Error(e && e.name === 'AbortError' ? 'A clínica demorou para responder. Verifique sua internet e toque em "Tentar de novo".' : 'Sem conexão com a clínica. Verifique sua internet e tente de novo.');
+  } finally { clearTimeout(limite) }
   let dados = {};
   try { dados = await r.json() } catch (e) {}
   if (r.status === 401 && S.token) { sair(true); throw new Error('Sua sessão expirou. Entre novamente.') }
@@ -599,13 +604,16 @@ function moldura(conteudo) {
   <nav class="nav" aria-label="Navegação"><div class="nav-in">${nav.map(([id, t, ic]) => `<button type="button" data-a="ir" data-v="${id}" ${S.tela === id || (id === 'agenda' && S.tela === 'nps') ? 'aria-current="page"' : ''}>${ic}${t}</button>`).join('')}</div></nav>
   ${S.toast ? `<div class="toast" role="status">${esc(S.toast)}</div>` : ''}`;
 }
+const falhaCarregar = () => `<div class="cartao vazio">${I.lista}<p>${esc(S.erro || 'Não foi possível carregar.')}</p>
+  <button class="btn btn-primario" data-a="recarregar">Tentar de novo</button>
+  <p class="miudo">Se continuar, fale com a recepção: ${esc(CONFIG.WHATSAPP_EXIBIR)}</p></div>`;
 const carregando = (t = 'Carregando…') => `<div class="carregando">${t}</div>`;
 const erroCaixa = () => S.erro ? `<div class="erro-msg" role="alert">${esc(S.erro)}</div>` : '';
 function blocoData(iso) { return `<div class="data-bloco"><b>${fmt(iso, { day: '2-digit' })}</b><span>${fmt(iso, { month: 'short' }).replace('.', '')}</span></div>` }
 
 /* ---------- Início ---------- */
 function telaInicio() {
-  if (!S.agendamentos) return carregando();
+  if (!S.agendamentos) return S.erro ? falhaCarregar() : carregando();
   const p = proximos()[0], av = pendenteAvaliar();
   const h = new Date().toLocaleString('en-US', { timeZone: CONFIG.FUSO, hour: 'numeric', hour12: false });
   const ola = +h < 12 ? 'Bom dia' : +h < 18 ? 'Boa tarde' : 'Boa noite';
@@ -685,7 +693,7 @@ function novoFluxo(remarcar) {
   }
 }
 function telaAgendar() {
-  if (!S.servicos) return carregando();
+  if (!S.servicos) return S.erro ? falhaCarregar() : carregando();
   const g = S.ag, sv = svAtual(g), p = profAtual(g), m = modAtual(g), conv = convAtual(g);
   const ps = passos(g), idx = Math.max(0, ps.indexOf(g.etapa)), total = ps.length;
   const inicioFluxo = g.remarcar ? 1 : 0;
@@ -794,7 +802,7 @@ function cartaoAg(a, futuro) {
   </article>`;
 }
 function telaAgenda() {
-  if (!S.agendamentos) return carregando();
+  if (!S.agendamentos) return S.erro ? falhaCarregar() : carregando();
   const fut = S.abaLista === 'proximos', lista = fut ? proximos() : anteriores();
   return `<div class="cab-etapa"><h2>Meus agendamentos</h2></div>
   <div class="abas" role="group"><button data-a="abaLista" data-v="proximos" aria-pressed="${fut}">Próximos (${proximos().length})</button><button data-a="abaLista" data-v="anteriores" aria-pressed="${!fut}">Anteriores</button></div>
@@ -889,6 +897,7 @@ document.addEventListener('click', async e => {
   try {
     switch (a) {
       case 'loginAba': S.loginAba = v; S.erro = ''; render(); break;
+      case 'recarregar': S.erro = ''; S.agendamentos = null; S.servicos = null; ir(S.tela); break;
       case 'sair': sair(); break;
       case 'ir': ir(v); break;
       case 'verPreparo': ir('preparo', { preparoAberto: v }); break;
